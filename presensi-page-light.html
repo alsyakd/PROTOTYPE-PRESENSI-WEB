@@ -1,0 +1,1352 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Presensi Online | SMK Syubbanul Wathon</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --cream: #faf8f4;
+        --cream-2: #f3f0ea;
+        --cream-3: #ebe6dc;
+        --ink: #1a1612;
+        --ink-2: #3d3730;
+        --ink-3: #7a7068;
+        --blue: #1a56db;
+        --blue-light: #e8effd;
+        --blue-mid: #3b7bff;
+        --green: #0d9f6e;
+        --green-light: #e6f7f2;
+        --amber: #d97706;
+        --amber-light: #fef3c7;
+        --red: #dc2626;
+        --red-light: #fee2e2;
+        --white: #ffffff;
+        --shadow-sm:
+          0 1px 3px rgba(26, 22, 18, 0.06), 0 1px 2px rgba(26, 22, 18, 0.04);
+        --shadow-md:
+          0 4px 16px rgba(26, 22, 18, 0.08), 0 2px 6px rgba(26, 22, 18, 0.04);
+        --shadow-lg:
+          0 16px 48px rgba(26, 22, 18, 0.12), 0 4px 12px rgba(26, 22, 18, 0.06);
+        --font-sans: "Plus Jakarta Sans", sans-serif;
+        --font-serif: "Instrument Serif", serif;
+        --font-mono: "JetBrains Mono", monospace;
+      }
+
+      body {
+        font-family: var(--font-sans);
+        background-color: var(--cream);
+        color: var(--ink);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* ===== BACKGROUND ===== */
+      .bg-texture {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background-image:
+          radial-gradient(
+            circle at 20% 20%,
+            rgba(26, 86, 219, 0.05) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(13, 159, 110, 0.05) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            ellipse at 50% 0%,
+            rgba(26, 86, 219, 0.04) 0%,
+            transparent 60%
+          );
+        pointer-events: none;
+      }
+
+      .bg-dots {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background-image: radial-gradient(
+          circle,
+          rgba(26, 22, 18, 0.06) 1px,
+          transparent 1px
+        );
+        background-size: 28px 28px;
+        pointer-events: none;
+        mask-image: radial-gradient(
+          ellipse at center,
+          rgba(0, 0, 0, 0.4) 0%,
+          transparent 80%
+        );
+      }
+
+      /* ===== WRAPPER ===== */
+      .wrapper {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 clamp(16px, 4vw, 48px);
+      }
+
+      /* ===== HEADER ===== */
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 22px 0 18px;
+        border-bottom: 1.5px solid var(--cream-3);
+        animation: fadeDown 0.7s ease both;
+      }
+
+      @keyframes fadeDown {
+        from {
+          opacity: 0;
+          transform: translateY(-16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand-logo {
+        width: 44px;
+        height: 44px;
+        background: var(--white);
+        border-radius: 12px;
+        border: 1.5px solid var(--cream-3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-sm);
+        padding: 5px;
+      }
+
+      .brand-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      .brand-text {
+        line-height: 1.25;
+      }
+
+      .brand-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+      }
+
+      .brand-sub {
+        font-size: 12px;
+        color: var(--ink-3);
+        font-family: var(--font-mono);
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .live-pill {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--green-light);
+        border: 1px solid rgba(13, 159, 110, 0.2);
+        border-radius: 100px;
+        padding: 5px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--green);
+        letter-spacing: 0.03em;
+      }
+
+      .live-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 0 3px rgba(13, 159, 110, 0.2);
+        animation: livePulse 2s ease-in-out infinite;
+      }
+
+      @keyframes livePulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 3px rgba(13, 159, 110, 0.2);
+        }
+        50% {
+          box-shadow: 0 0 0 6px rgba(13, 159, 110, 0.08);
+        }
+      }
+
+      .terminal-badge {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--ink-3);
+        background: var(--cream-2);
+        border: 1px solid var(--cream-3);
+        border-radius: 8px;
+        padding: 5px 10px;
+        letter-spacing: 0.05em;
+      }
+
+      /* ===== MAIN ===== */
+      main {
+        display: grid;
+        grid-template-columns: 280px 1fr 280px;
+        gap: 20px;
+        padding: 28px 0;
+        align-items: stretch;
+      }
+
+      @media (max-width: 1024px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+        header .header-right {
+          display: none;
+        }
+      }
+
+      /* ===== CARD BASE ===== */
+      .card {
+        background: var(--white);
+        border: 1.5px solid var(--cream-3);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: var(--shadow-md);
+        animation: fadeUp 0.6s ease both;
+        position: relative;
+        overflow: hidden;
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(24px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .card:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .card:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .card:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+
+      .card-accent {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--blue), var(--blue-mid));
+        border-radius: 24px 24px 0 0;
+      }
+
+      .card-accent.green {
+        background: linear-gradient(90deg, var(--green), #34d399);
+      }
+
+      /* ===== LEFT CARD — INFO ===== */
+      .card-left {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .school-emblem {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 20px;
+        background: var(--cream);
+        border-radius: 18px;
+        border: 1px solid var(--cream-3);
+      }
+
+      .school-emblem img {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+      }
+
+      .school-emblem-name {
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+        color: var(--ink-2);
+        letter-spacing: 0.02em;
+        line-height: 1.4;
+      }
+
+      .school-emblem-sub {
+        font-size: 10px;
+        color: var(--ink-3);
+        font-family: var(--font-mono);
+      }
+
+      /* Clock */
+      .clock-area {
+        text-align: center;
+      }
+
+      .clock-time {
+        font-family: var(--font-mono);
+        font-size: 38px;
+        font-weight: 600;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+
+      .clock-sec {
+        font-size: 0.55em;
+        color: var(--blue);
+      }
+
+      .clock-colon {
+        animation: blink 1s step-end infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.2;
+        }
+      }
+
+      .clock-date {
+        font-size: 12px;
+        color: var(--ink-3);
+        margin-top: 6px;
+      }
+
+      /* Stats */
+      .stats-title {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        margin-bottom: 10px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+      }
+
+      .stat-box {
+        background: var(--cream);
+        border: 1px solid var(--cream-3);
+        border-radius: 14px;
+        padding: 12px 8px;
+        text-align: center;
+      }
+
+      .stat-box .num {
+        font-family: var(--font-mono);
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .stat-box .lbl {
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 3px;
+      }
+
+      .stat-box.hadir .num {
+        color: var(--green);
+      }
+      .stat-box.hadir .lbl {
+        color: rgba(13, 159, 110, 0.6);
+      }
+
+      .stat-box.izin .num {
+        color: var(--amber);
+      }
+      .stat-box.izin .lbl {
+        color: rgba(217, 119, 6, 0.6);
+      }
+
+      .stat-box.alpha .num {
+        color: var(--red);
+      }
+      .stat-box.alpha .lbl {
+        color: rgba(220, 38, 38, 0.6);
+      }
+
+      /* Progress bar */
+      .progress-section {
+        margin-top: 12px;
+        background: var(--cream);
+        border: 1px solid var(--cream-3);
+        border-radius: 14px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: var(--ink-3);
+        margin-bottom: 6px;
+      }
+
+      .progress-bar {
+        height: 8px;
+        background: var(--cream-2);
+        border-radius: 100px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--blue), var(--blue-mid));
+        border-radius: 100px;
+        animation: fillBar 1.5s ease 0.5s both;
+        transform-origin: left;
+      }
+
+      @keyframes fillBar {
+        from {
+          width: 0 !important;
+        }
+      }
+
+      /* ===== CENTER CARD — SCANNER ===== */
+      .card-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 32px;
+        text-align: center;
+        padding: 40px;
+      }
+
+      /* Fingerprint-style scanner art */
+      .scanner-visual {
+        position: relative;
+        width: 180px;
+        height: 180px;
+      }
+
+      .scanner-circle {
+        position: absolute;
+        border-radius: 50%;
+        border: 1.5px solid;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .sc-1 {
+        width: 180px;
+        height: 180px;
+        border-color: rgba(26, 86, 219, 0.1);
+      }
+      .sc-2 {
+        width: 150px;
+        height: 150px;
+        border-color: rgba(26, 86, 219, 0.15);
+      }
+      .sc-3 {
+        width: 120px;
+        height: 120px;
+        border-color: rgba(26, 86, 219, 0.2);
+      }
+      .sc-4 {
+        width: 90px;
+        height: 90px;
+        border-color: rgba(26, 86, 219, 0.3);
+      }
+
+      .sc-1 {
+        animation: scanRing 4s ease-in-out infinite;
+      }
+      .sc-2 {
+        animation: scanRing 4s ease-in-out infinite 0.3s;
+      }
+      .sc-3 {
+        animation: scanRing 4s ease-in-out infinite 0.6s;
+      }
+      .sc-4 {
+        animation: scanRing 4s ease-in-out infinite 0.9s;
+      }
+
+      @keyframes scanRing {
+        0%,
+        100% {
+          opacity: 0.5;
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1.05);
+        }
+      }
+
+      .scanner-core {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70px;
+        height: 70px;
+        background: var(--blue-light);
+        border: 2px solid rgba(26, 86, 219, 0.3);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        color: var(--blue);
+        box-shadow: 0 0 0 6px rgba(26, 86, 219, 0.08);
+      }
+
+      .scanner-sweep {
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        width: 80%;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--blue),
+          transparent
+        );
+        border-radius: 2px;
+        animation: sweep 2.5s ease-in-out infinite;
+      }
+
+      @keyframes sweep {
+        0% {
+          top: 15%;
+          opacity: 0;
+        }
+        15% {
+          opacity: 1;
+        }
+        85% {
+          opacity: 1;
+        }
+        100% {
+          top: 85%;
+          opacity: 0;
+        }
+      }
+
+      /* Input section */
+      .input-section {
+        width: 100%;
+        max-width: 380px;
+      }
+
+      .input-heading {
+        font-family: var(--font-serif);
+        font-size: 24px;
+        font-style: italic;
+        color: var(--ink);
+        margin-bottom: 4px;
+      }
+
+      .input-subheading {
+        font-size: 13px;
+        color: var(--ink-3);
+        margin-bottom: 18px;
+      }
+
+      .field-wrap {
+        position: relative;
+      }
+
+      .field-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--ink-3);
+        font-size: 16px;
+        pointer-events: none;
+        transition: color 0.2s;
+      }
+
+      .field-input {
+        width: 100%;
+        background: var(--cream);
+        border: 2px solid var(--cream-3);
+        border-radius: 14px;
+        padding: 16px 16px 16px 48px;
+        font-family: var(--font-mono);
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--ink);
+        outline: none;
+        transition:
+          border-color 0.25s,
+          background 0.25s,
+          box-shadow 0.25s;
+        letter-spacing: 0.04em;
+      }
+
+      .field-input::placeholder {
+        color: var(--cream-3);
+        font-weight: 400;
+      }
+
+      .field-input:focus {
+        border-color: var(--blue);
+        background: var(--white);
+        box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.1);
+      }
+
+      .field-wrap:focus-within .field-icon {
+        color: var(--blue);
+      }
+
+      .field-hint {
+        margin-top: 8px;
+        text-align: right;
+        font-size: 11px;
+        color: var(--ink-3);
+        font-family: var(--font-mono);
+      }
+
+      .kbd {
+        background: var(--cream-2);
+        border: 1px solid var(--cream-3);
+        border-bottom: 2px solid var(--cream-3);
+        border-radius: 5px;
+        padding: 1px 7px;
+        font-size: 10px;
+      }
+
+      /* Log */
+      .log-wrap {
+        width: 100%;
+        max-width: 380px;
+      }
+
+      .log-header {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--ink-3);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .log-count {
+        background: var(--blue-light);
+        color: var(--blue);
+        font-size: 10px;
+        font-weight: 700;
+        border-radius: 100px;
+        padding: 1px 8px;
+      }
+
+      .log-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .log-row {
+        display: flex;
+        align-items: center;
+        background: var(--cream);
+        border: 1px solid var(--cream-3);
+        border-radius: 10px;
+        padding: 9px 12px;
+        gap: 10px;
+        font-size: 12px;
+        animation: rowIn 0.4s ease both;
+      }
+
+      @keyframes rowIn {
+        from {
+          opacity: 0;
+          transform: translateY(-6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .log-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        object-fit: cover;
+      }
+
+      .log-info {
+        flex: 1;
+      }
+
+      .log-name {
+        font-weight: 600;
+        color: var(--ink);
+        font-size: 12px;
+      }
+      .log-meta {
+        font-size: 10px;
+        color: var(--ink-3);
+        font-family: var(--font-mono);
+      }
+
+      .log-badge {
+        font-size: 10px;
+        font-weight: 600;
+        background: var(--green-light);
+        color: var(--green);
+        border-radius: 6px;
+        padding: 2px 8px;
+        border: 1px solid rgba(13, 159, 110, 0.2);
+      }
+
+      /* ===== RIGHT CARD — PROFILE ===== */
+      .card-right {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding: 32px 28px;
+      }
+
+      .profile-photo {
+        position: relative;
+      }
+
+      .profile-img {
+        width: 110px;
+        height: 110px;
+        border-radius: 22px;
+        border: 3px solid var(--white);
+        box-shadow: var(--shadow-md);
+        object-fit: cover;
+      }
+
+      .profile-badge {
+        position: absolute;
+        bottom: -6px;
+        right: -6px;
+        width: 30px;
+        height: 30px;
+        background: var(--green);
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 13px;
+        box-shadow: 0 2px 8px rgba(13, 159, 110, 0.4);
+        border: 2.5px solid var(--white);
+      }
+
+      .profile-ring {
+        position: absolute;
+        inset: -8px;
+        border-radius: 30px;
+        border: 1.5px dashed rgba(26, 86, 219, 0.2);
+        animation: spinSlow 20s linear infinite;
+      }
+
+      @keyframes spinSlow {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .profile-info {
+        text-align: center;
+      }
+
+      .profile-name {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+      }
+
+      .profile-role {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 5px;
+        background: var(--blue-light);
+        color: var(--blue);
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 100px;
+        padding: 3px 12px;
+      }
+
+      /* Data rows */
+      .data-rows {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .data-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 11px 14px;
+        background: var(--cream);
+        border: 1px solid var(--cream-3);
+        border-radius: 12px;
+      }
+
+      .data-row-label {
+        font-size: 11px;
+        color: var(--ink-3);
+        font-weight: 500;
+      }
+
+      .data-row-val {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .data-row.highlight {
+        background: var(--green-light);
+        border-color: rgba(13, 159, 110, 0.2);
+      }
+
+      .data-row.highlight .data-row-label {
+        color: var(--green);
+      }
+      .data-row.highlight .data-row-val {
+        color: var(--green);
+        font-size: 13px;
+      }
+
+      /* Divider */
+      .divider {
+        width: 100%;
+        height: 1px;
+        background: var(--cream-3);
+      }
+
+      .uid-text {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--cream-3);
+        text-align: center;
+        letter-spacing: 0.08em;
+      }
+
+      /* ===== BOTTOM STRIP ===== */
+      .bottom-strip {
+        border-top: 1.5px solid var(--cream-3);
+        padding: 16px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        animation: fadeUp 0.6s ease 0.5s both;
+      }
+
+      .partners-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--cream-3);
+        white-space: nowrap;
+      }
+
+      .partner-logos {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+      }
+
+      .partner-logos img {
+        height: 28px;
+        width: auto;
+        filter: grayscale(100%) opacity(0.3);
+        transition:
+          filter 0.3s,
+          transform 0.3s;
+      }
+
+      .partner-logos img:hover {
+        filter: grayscale(0%) opacity(1);
+        transform: translateY(-2px);
+      }
+
+      /* ===== FOOTER ===== */
+      footer {
+        text-align: center;
+        padding: 12px 0 20px;
+        font-size: 11px;
+        color: var(--cream-3);
+        animation: fadeUp 0.6s ease 0.6s both;
+      }
+
+      footer strong {
+        color: var(--ink-3);
+        font-weight: 600;
+      }
+
+      /* ===== TOAST ===== */
+      .toast {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: var(--white);
+        border: 1.5px solid var(--cream-3);
+        border-left: 4px solid var(--green);
+        border-radius: 16px;
+        padding: 14px 20px;
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 100;
+        transform: translateX(120%);
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        max-width: 300px;
+      }
+
+      .toast.show {
+        transform: translateX(0);
+      }
+
+      .toast-icon {
+        width: 36px;
+        height: 36px;
+        background: var(--green-light);
+        color: var(--green);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+
+      .toast-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .toast-sub {
+        font-size: 11px;
+        color: var(--ink-3);
+        font-family: var(--font-mono);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-texture"></div>
+    <div class="bg-dots"></div>
+
+    <div class="wrapper">
+      <!-- HEADER -->
+      <header>
+        <div class="brand">
+          <div class="brand-logo">
+            <img
+              src="cropped-SMK-T.png"
+              alt="Logo"
+              onerror="
+                this.style.display = 'none';
+                this.parentNode.innerHTML +=
+                  '<i class=\'fas fa-graduation-cap\' style=\'font-size:22px;color:#1a56db\'></i>';
+              "
+            />
+          </div>
+          <div class="brand-text">
+            <div class="brand-name">Sistem Presensi Online</div>
+            <div class="brand-sub">SMK Syubbanul Wathon</div>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="live-pill">
+            <div class="live-dot"></div>
+            Server Aktif
+          </div>
+          <div class="terminal-badge">GW-01-SW-2026</div>
+        </div>
+      </header>
+
+      <!-- MAIN GRID -->
+      <main>
+        <!-- LEFT: Info & Clock -->
+        <div class="card card-left">
+          <div class="card-accent"></div>
+
+          <div class="school-emblem">
+            <img
+              src="cropped-SMK-T.png"
+              alt="Logo"
+              onerror="this.style.display = 'none'"
+            />
+            <div class="school-emblem-name">SMK Syubbanul Wathon</div>
+            <div class="school-emblem-sub">Tegalrejo, Magelang</div>
+          </div>
+
+          <div class="clock-area">
+            <div class="clock-time">
+              <span id="hh">00</span><span class="clock-colon">:</span
+              ><span id="mm">00</span
+              ><span class="clock-sec">:<span id="ss">00</span></span>
+            </div>
+            <div class="clock-date" id="dateText">Memuat tanggal...</div>
+          </div>
+
+          <div>
+            <div class="stats-title">Rekap Hari Ini</div>
+            <div class="stats-grid">
+              <div class="stat-box hadir">
+                <div class="num" id="hadirNum">32</div>
+                <div class="lbl">Hadir</div>
+              </div>
+              <div class="stat-box izin">
+                <div class="num">3</div>
+                <div class="lbl">Izin</div>
+              </div>
+              <div class="stat-box alpha">
+                <div class="num">5</div>
+                <div class="lbl">Alpha</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="progress-section">
+            <div class="progress-label">
+              <span>Kehadiran</span>
+              <span id="progressPct">80%</span>
+            </div>
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                id="progressFill"
+                style="width: 80%"
+              ></div>
+            </div>
+          </div>
+
+          <div
+            style="
+              font-size: 10px;
+              color: var(--cream-3);
+              font-family: var(--font-mono);
+              text-align: center;
+            "
+          >
+            Tahun Pelajaran 2025/2026
+          </div>
+        </div>
+
+        <!-- CENTER: Scanner -->
+        <div class="card card-center">
+          <div class="card-accent"></div>
+
+          <div class="scanner-visual">
+            <div class="scanner-circle sc-1"></div>
+            <div class="scanner-circle sc-2"></div>
+            <div class="scanner-circle sc-3"></div>
+            <div class="scanner-circle sc-4"></div>
+            <div class="scanner-core">
+              <i class="fas fa-id-card"></i>
+            </div>
+            <div class="scanner-sweep"></div>
+          </div>
+
+          <div class="input-section">
+            <div class="input-heading">Tap Kartu Disini</div>
+            <div class="input-subheading">
+              Arahkan kartu ke scanner atau masukkan ID manual
+            </div>
+
+            <div class="field-wrap">
+              <i class="fas fa-barcode field-icon"></i>
+              <input
+                type="text"
+                class="field-input"
+                id="scanInput"
+                placeholder="ID Siswa / Guru..."
+                autofocus
+                autocomplete="off"
+              />
+            </div>
+            <div class="field-hint">
+              Tekan <span class="kbd">Enter</span> untuk konfirmasi
+            </div>
+          </div>
+
+          <div class="log-wrap">
+            <div class="log-header">
+              <span>Log Terbaru</span>
+              <span class="log-count" id="logCount">3</span>
+            </div>
+            <div class="log-list" id="logList">
+              <div class="log-row">
+                <img
+                  src="https://ui-avatars.com/api/?name=Budi+S&background=e8effd&color=1a56db&size=56&bold=true"
+                  alt=""
+                  class="log-avatar"
+                />
+                <div class="log-info">
+                  <div class="log-name">Budi Santoso</div>
+                  <div class="log-meta">07:02:11 · XI RPL 1</div>
+                </div>
+                <div class="log-badge">Hadir</div>
+              </div>
+              <div class="log-row">
+                <img
+                  src="https://ui-avatars.com/api/?name=Siti+R&background=e6f7f2&color=0d9f6e&size=56&bold=true"
+                  alt=""
+                  class="log-avatar"
+                />
+                <div class="log-info">
+                  <div class="log-name">Siti Rahayu</div>
+                  <div class="log-meta">06:58:44 · X TKJ 2</div>
+                </div>
+                <div class="log-badge">Hadir</div>
+              </div>
+              <div class="log-row">
+                <img
+                  src="https://ui-avatars.com/api/?name=Ahmad+F&background=fef3c7&color=d97706&size=56&bold=true"
+                  alt=""
+                  class="log-avatar"
+                />
+                <div class="log-info">
+                  <div class="log-name">Ahmad Fauzi</div>
+                  <div class="log-meta">06:55:19 · XII AKL 1</div>
+                </div>
+                <div class="log-badge">Hadir</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Profile -->
+        <div class="card card-right">
+          <div class="card-accent green"></div>
+
+          <div class="profile-photo">
+            <img
+              src="https://ui-avatars.com/api/?name=Alsya+Kanaya+Dzikra&background=1a56db&color=fff&size=220&bold=true"
+              alt="Profile"
+              class="profile-img"
+            />
+            <div class="profile-badge"><i class="fas fa-check"></i></div>
+            <div class="profile-ring"></div>
+          </div>
+
+          <div class="profile-info">
+            <div class="profile-name">Alsya Kanaya Dzikra</div>
+            <div class="profile-role">
+              <i class="fas fa-user-graduate" style="font-size: 9px"></i>
+              Student — XI RPL 1
+            </div>
+          </div>
+
+          <div class="data-rows">
+            <div class="data-row">
+              <span class="data-row-label">NIS</span>
+              <span class="data-row-val">12345678</span>
+            </div>
+            <div class="data-row">
+              <span class="data-row-label">Pukul Masuk</span>
+              <span class="data-row-val">07:15:22</span>
+            </div>
+            <div class="data-row">
+              <span class="data-row-label">Hari Ke</span>
+              <span class="data-row-val">182 / 250</span>
+            </div>
+            <div class="data-row highlight">
+              <span class="data-row-label"
+                ><i class="fas fa-check-circle" style="margin-right: 4px"></i
+                >Status</span
+              >
+              <span class="data-row-val">HADIR ✓</span>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="uid-text">UID: 0xA3F9C2D1</div>
+        </div>
+      </main>
+
+      <!-- BOTTOM PARTNER STRIP -->
+      <div class="bottom-strip">
+        <div class="partners-label">Supported By</div>
+        <div class="partner-logos">
+          <img src="e77b9ef2c622a28582de4f676f0c3720.png" alt="" />
+          <img src="SMK-Bisa-Hebat-V3.png" alt="" />
+          <img src="smk_pk_logo.png" alt="" />
+          <img src="cropped-SMK-T.png" alt="" />
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <footer>
+        Developed with ♥ by <strong>Alsya Kanaya Dzikra</strong> &nbsp;·&nbsp;
+        Syubbanul Wathon Smart Education Platform &nbsp;·&nbsp; © 2026
+      </footer>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast">
+      <div class="toast-icon"><i class="fas fa-check"></i></div>
+      <div>
+        <div class="toast-title" id="toastTitle">Presensi Berhasil</div>
+        <div class="toast-sub" id="toastSub">07:15:22</div>
+      </div>
+    </div>
+
+    <script>
+      // Clock
+      function updateClock() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, "0");
+        const mm = String(now.getMinutes()).padStart(2, "0");
+        const ss = String(now.getSeconds()).padStart(2, "0");
+        document.getElementById("hh").textContent = hh;
+        document.getElementById("mm").textContent = mm;
+        document.getElementById("ss").textContent = ss;
+        const opts = {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        };
+        document.getElementById("dateText").textContent =
+          now.toLocaleDateString("id-ID", opts);
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      // Focus lock
+      const input = document.getElementById("scanInput");
+      window.addEventListener("load", () => input.focus());
+      document.addEventListener("click", () => input.focus());
+
+      // Toast
+      function showToast(name, time) {
+        document.getElementById("toastTitle").textContent =
+          `${name} — Berhasil`;
+        document.getElementById("toastSub").textContent = time;
+        const t = document.getElementById("toast");
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 3200);
+      }
+
+      // Scan handler
+      const colors = [
+        "e8effd/1a56db",
+        "e6f7f2/0d9f6e",
+        "fef3c7/d97706",
+        "fce7f3/9d174d",
+      ];
+      let logCount = 3;
+
+      input.addEventListener("keypress", function (e) {
+        if (e.key === "Enter" && this.value.trim()) {
+          const idVal = this.value.trim();
+          const now = new Date();
+          const t = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+          const col = colors[Math.floor(Math.random() * colors.length)];
+          const [bg, fg] = col.split("/");
+
+          const row = document.createElement("div");
+          row.className = "log-row";
+          row.innerHTML = `
+          <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(idVal)}&background=${bg}&color=${fg}&size=56&bold=true" class="log-avatar" alt="" />
+          <div class="log-info">
+            <div class="log-name">ID: ${idVal}</div>
+            <div class="log-meta">${t}</div>
+          </div>
+          <div class="log-badge">Hadir</div>
+        `;
+
+          const list = document.getElementById("logList");
+          list.insertBefore(row, list.firstChild);
+          if (list.children.length > 4) list.removeChild(list.lastChild);
+
+          logCount++;
+          document.getElementById("logCount").textContent = logCount;
+
+          const hNum = document.getElementById("hadirNum");
+          hNum.textContent = parseInt(hNum.textContent) + 1;
+
+          showToast(`ID: ${idVal}`, t);
+          this.value = "";
+        }
+      });
+    </script>
+  </body>
+</html>

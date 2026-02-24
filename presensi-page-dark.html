@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistem Presensi Online | SMK Syubbanul Wathon</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #040c1e;
+      --navy-2: #07142e;
+      --blue-bright: #0ea5ff;
+      --blue-mid: #0071c2;
+      --green-neon: #00ff9d;
+      --green-mid: #00c87a;
+      --amber: #fbbf24;
+      --white: #f0f6ff;
+      --grid-color: rgba(14, 165, 255, 0.06);
+      --font-display: 'Orbitron', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ===== BACKGROUND FX ===== */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .bg-glow-1 {
+      position: fixed; width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(14,165,255,0.12) 0%, transparent 70%);
+      top: -200px; left: -200px; z-index: 0;
+      pointer-events: none;
+      animation: driftGlow1 12s ease-in-out infinite alternate;
+    }
+    .bg-glow-2 {
+      position: fixed; width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,255,157,0.09) 0%, transparent 70%);
+      bottom: -150px; right: -150px; z-index: 0;
+      pointer-events: none;
+      animation: driftGlow2 15s ease-in-out infinite alternate;
+    }
+
+    @keyframes driftGlow1 {
+      from { transform: translate(0,0) scale(1); }
+      to { transform: translate(80px, 60px) scale(1.15); }
+    }
+    @keyframes driftGlow2 {
+      from { transform: translate(0,0) scale(1); }
+      to { transform: translate(-60px, -50px) scale(1.2); }
+    }
+
+    .scan-line {
+      position: fixed; inset: 0; z-index: 1;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(14,165,255,0.015) 2px,
+        rgba(14,165,255,0.015) 4px
+      );
+      pointer-events: none;
+    }
+
+    /* ===== LAYOUT ===== */
+    .wrapper {
+      position: relative; z-index: 2;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 0 clamp(16px, 4vw, 48px);
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 24px 0 20px;
+      border-bottom: 1px solid rgba(14,165,255,0.15);
+      animation: fadeDown 0.8s ease both;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header-brand {
+      display: flex; align-items: center; gap: 14px;
+    }
+
+    .logo-box {
+      width: 46px; height: 46px;
+      background: linear-gradient(135deg, var(--blue-mid), var(--blue-bright));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      box-shadow: 0 0 20px rgba(14,165,255,0.35);
+    }
+
+    .logo-box img { width: 34px; height: 34px; object-fit: contain; }
+
+    .logo-box::after {
+      content: ''; position: absolute; inset: -2px;
+      border-radius: 14px;
+      border: 1px solid rgba(14,165,255,0.4);
+      animation: borderPulse 3s infinite;
+    }
+
+    @keyframes borderPulse {
+      0%,100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-transform: uppercase;
+      line-height: 1.3;
+    }
+
+    .brand-sub {
+      font-size: 11px; color: var(--blue-bright);
+      letter-spacing: 0.08em;
+      font-family: var(--font-mono);
+    }
+
+    .header-meta {
+      display: flex; align-items: center; gap: 24px;
+    }
+
+    .status-pill {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(0,255,157,0.08);
+      border: 1px solid rgba(0,255,157,0.25);
+      border-radius: 100px; padding: 6px 14px;
+      font-size: 10px; font-family: var(--font-mono);
+      letter-spacing: 0.15em; color: var(--green-neon);
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green-neon);
+      box-shadow: 0 0 8px var(--green-neon);
+      animation: dotBlink 2s infinite;
+    }
+
+    @keyframes dotBlink {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .terminal-id {
+      font-family: var(--font-mono);
+      font-size: 11px; color: rgba(240,246,255,0.35);
+      letter-spacing: 0.1em;
+    }
+
+    /* ===== MAIN GRID ===== */
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr 1fr;
+      gap: 20px;
+      align-items: center;
+      padding: 32px 0;
+    }
+
+    @media (max-width: 1024px) {
+      main { grid-template-columns: 1fr; }
+      header .header-meta { display: none; }
+    }
+
+    /* ===== PANEL BASE ===== */
+    .panel {
+      border: 1px solid rgba(14,165,255,0.15);
+      border-radius: 24px;
+      background: rgba(7,20,46,0.7);
+      backdrop-filter: blur(20px);
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .panel::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--blue-bright), transparent);
+      opacity: 0.4;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel:nth-child(1) { animation-delay: 0.1s; }
+    .panel:nth-child(2) { animation-delay: 0.2s; }
+    .panel:nth-child(3) { animation-delay: 0.3s; }
+
+    /* ===== LEFT PANEL — CLOCK ===== */
+    .panel-clock {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px; text-align: center;
+      min-height: 480px;
+    }
+
+    .school-logo {
+      width: 90px; height: 90px;
+      border-radius: 20px;
+      background: rgba(14,165,255,0.08);
+      border: 1px solid rgba(14,165,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      padding: 10px;
+      position: relative;
+    }
+
+    .school-logo img { width: 100%; height: 100%; object-fit: contain; }
+
+    .school-logo::after {
+      content: ''; position: absolute; inset: -6px;
+      border-radius: 26px;
+      border: 1px dashed rgba(14,165,255,0.2);
+      animation: spinSlow 20s linear infinite;
+    }
+
+    @keyframes spinSlow { to { transform: rotate(360deg); } }
+
+    .clock-display {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 5vw, 52px);
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      text-shadow: 0 0 30px rgba(14,165,255,0.5);
+      line-height: 1;
+    }
+
+    .clock-colon {
+      animation: colonBlink 1s step-end infinite;
+      display: inline-block;
+    }
+    @keyframes colonBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.15; } }
+
+    .clock-seconds {
+      font-size: 0.55em;
+      color: var(--blue-bright);
+      vertical-align: super;
+    }
+
+    .date-display {
+      font-size: 13px; color: rgba(240,246,255,0.5);
+      letter-spacing: 0.05em;
+      font-family: var(--font-mono);
+    }
+
+    /* Arc stats */
+    .arc-stats {
+      width: 100%; display: flex; gap: 10px;
+    }
+
+    .arc-item {
+      flex: 1; background: rgba(14,165,255,0.06);
+      border: 1px solid rgba(14,165,255,0.12);
+      border-radius: 14px; padding: 12px;
+      text-align: center;
+    }
+
+    .arc-item .val {
+      font-family: var(--font-display);
+      font-size: 22px; font-weight: 700;
+      color: var(--blue-bright);
+    }
+
+    .arc-item.green .val { color: var(--green-neon); }
+    .arc-item.amber .val { color: var(--amber); }
+
+    .arc-item .lbl {
+      font-size: 9px; letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(240,246,255,0.4);
+      margin-top: 2px;
+      font-family: var(--font-mono);
+    }
+
+    /* ===== CENTER PANEL — INPUT ===== */
+    .panel-input {
+      background: rgba(4,12,30,0.85);
+      border-color: rgba(14,165,255,0.25);
+      min-height: 540px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 32px;
+      text-align: center;
+    }
+
+    .scanner-ring {
+      position: relative;
+      width: 160px; height: 160px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .ring-outer {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(14,165,255,0.2);
+      animation: ringPulse 3s ease-in-out infinite;
+    }
+
+    .ring-mid {
+      position: absolute; inset: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,255,157,0.25);
+      animation: ringPulse 3s ease-in-out infinite reverse;
+    }
+
+    @keyframes ringPulse {
+      0%,100% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.06); opacity: 1; }
+    }
+
+    .scanner-icon {
+      width: 90px; height: 90px;
+      background: linear-gradient(135deg, rgba(14,165,255,0.12), rgba(0,255,157,0.08));
+      border: 1px solid rgba(14,165,255,0.3);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 1;
+      font-size: 36px;
+      color: var(--blue-bright);
+    }
+
+    .scanner-line {
+      position: absolute;
+      width: 80%; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--green-neon), transparent);
+      box-shadow: 0 0 10px var(--green-neon);
+      animation: scanMove 2.5s ease-in-out infinite;
+      z-index: 2;
+    }
+
+    @keyframes scanMove {
+      0% { top: 20%; opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { top: 80%; opacity: 0; }
+    }
+
+    .input-label {
+      font-family: var(--font-display);
+      font-size: 15px; font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--white);
+    }
+
+    .input-sub {
+      font-size: 12px; color: rgba(240,246,255,0.4);
+      margin-top: 4px; font-family: var(--font-mono);
+    }
+
+    .input-wrapper {
+      position: relative; width: 100%; max-width: 340px;
+    }
+
+    .input-glow {
+      position: absolute; inset: -1px;
+      border-radius: 17px;
+      background: linear-gradient(135deg, var(--blue-bright), var(--green-neon));
+      opacity: 0;
+      z-index: 0;
+      transition: opacity 0.3s;
+      filter: blur(8px);
+    }
+
+    .input-wrapper:focus-within .input-glow { opacity: 0.4; }
+
+    .scan-input {
+      position: relative; z-index: 1;
+      width: 100%;
+      background: rgba(14,165,255,0.05);
+      border: 1.5px solid rgba(14,165,255,0.3);
+      border-radius: 16px;
+      padding: 18px 20px 18px 56px;
+      font-family: var(--font-mono);
+      font-size: 16px; font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.08em;
+      outline: none;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .scan-input::placeholder { color: rgba(240,246,255,0.2); letter-spacing: 0.05em; }
+    .scan-input:focus { border-color: var(--blue-bright); background: rgba(14,165,255,0.08); }
+
+    .input-icon {
+      position: absolute; left: 18px; top: 50%;
+      transform: translateY(-50%);
+      z-index: 2; color: rgba(14,165,255,0.6);
+      font-size: 18px;
+    }
+
+    .input-corner {
+      position: absolute; width: 12px; height: 12px;
+      border-color: var(--blue-bright); border-style: solid;
+      opacity: 0.6;
+    }
+
+    .input-corner.tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+    .input-corner.tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+    .input-corner.bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+    .input-corner.br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+
+    .kbd-hint {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; color: rgba(240,246,255,0.3);
+      font-family: var(--font-mono);
+    }
+
+    .kbd {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 5px; padding: 2px 8px;
+      font-size: 10px;
+    }
+
+    /* Recent log */
+    .recent-log {
+      width: 100%; max-width: 340px;
+    }
+
+    .log-title {
+      font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(240,246,255,0.3); margin-bottom: 10px;
+      font-family: var(--font-mono);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .log-title::before, .log-title::after {
+      content: ''; flex: 1; height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .log-entry {
+      display: flex; justify-content: space-between;
+      align-items: center; padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(14,165,255,0.04);
+      margin-bottom: 6px;
+      border-left: 2px solid rgba(0,255,157,0.3);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      animation: logSlide 0.5s ease both;
+    }
+
+    @keyframes logSlide {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .log-name { color: rgba(240,246,255,0.7); }
+    .log-time { color: var(--green-neon); font-size: 10px; }
+
+    /* ===== RIGHT PANEL — PROFILE ===== */
+    .panel-profile {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 24px; text-align: center;
+      min-height: 480px;
+    }
+
+    .profile-frame {
+      position: relative;
+      width: 130px; height: 130px;
+    }
+
+    .profile-avatar {
+      width: 130px; height: 130px;
+      border-radius: 22px;
+      object-fit: cover;
+      border: 2px solid rgba(14,165,255,0.3);
+    }
+
+    .profile-scan-h, .profile-scan-v {
+      position: absolute;
+      background: var(--blue-bright);
+      opacity: 0;
+    }
+
+    .profile-scan-h {
+      left: 0; right: 0; height: 1px;
+      box-shadow: 0 0 8px var(--blue-bright);
+      animation: scanH 3s ease-in-out infinite 0.5s;
+    }
+
+    .profile-scan-v {
+      top: 0; bottom: 0; width: 1px;
+      box-shadow: 0 0 8px var(--blue-bright);
+      animation: scanV 3s ease-in-out infinite 1.5s;
+    }
+
+    @keyframes scanH {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.8; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    @keyframes scanV {
+      0% { left: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { left: 100%; opacity: 0; }
+    }
+
+    .profile-badge {
+      position: absolute; bottom: -8px; right: -8px;
+      width: 36px; height: 36px;
+      background: var(--green-neon);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--navy); font-size: 16px;
+      border: 3px solid var(--navy);
+      box-shadow: 0 0 16px rgba(0,255,157,0.5);
+    }
+
+    .profile-corner {
+      position: absolute; width: 16px; height: 16px;
+      border-color: var(--green-neon); border-style: solid;
+    }
+
+    .profile-corner.tl { top: -4px; left: -4px; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+    .profile-corner.tr { top: -4px; right: -4px; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+    .profile-corner.bl { bottom: -4px; left: -4px; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+    .profile-corner.br { bottom: -4px; right: -4px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+
+    .profile-name {
+      font-family: var(--font-display);
+      font-size: 15px; font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--white);
+    }
+
+    .profile-role {
+      display: inline-block;
+      font-size: 10px; letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--blue-bright);
+      background: rgba(14,165,255,0.1);
+      border: 1px solid rgba(14,165,255,0.25);
+      border-radius: 100px; padding: 3px 12px;
+      font-family: var(--font-mono);
+      margin-top: 4px;
+    }
+
+    .profile-data-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; width: 100%;
+    }
+
+    .data-cell {
+      background: rgba(14,165,255,0.05);
+      border: 1px solid rgba(14,165,255,0.12);
+      border-radius: 14px; padding: 14px 16px;
+      text-align: left; position: relative;
+    }
+
+    .data-cell.success {
+      background: rgba(0,255,157,0.06);
+      border-color: rgba(0,255,157,0.2);
+    }
+
+    .data-cell-lbl {
+      font-size: 9px; letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(240,246,255,0.3);
+      font-family: var(--font-mono); margin-bottom: 4px;
+    }
+
+    .data-cell-val {
+      font-family: var(--font-mono);
+      font-size: 14px; font-weight: 700;
+      color: var(--white);
+    }
+
+    .data-cell.success .data-cell-val { color: var(--green-neon); }
+    .data-cell.success .data-cell-lbl { color: var(--green-mid); }
+
+    .profile-id {
+      font-family: var(--font-mono);
+      font-size: 10px; color: rgba(240,246,255,0.25);
+      letter-spacing: 0.12em;
+    }
+
+    /* ===== PARTNERS STRIP ===== */
+    .partners-strip {
+      display: flex; align-items: center; justify-content: center;
+      gap: 48px; padding: 20px 0;
+      border-top: 1px solid rgba(14,165,255,0.1);
+      margin-top: 8px;
+      animation: fadeUp 0.7s ease 0.5s both;
+    }
+
+    .partners-label {
+      font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: rgba(240,246,255,0.2); font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+
+    .partner-logos {
+      display: flex; align-items: center; gap: 40px;
+    }
+
+    .partner-logos img {
+      height: 32px; width: auto;
+      filter: grayscale(100%) brightness(0.5);
+      opacity: 0.5;
+      transition: all 0.4s ease;
+    }
+
+    .partner-logos img:hover {
+      filter: grayscale(0%) brightness(1);
+      opacity: 1;
+      transform: translateY(-3px);
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      text-align: center; padding: 16px 0 24px;
+      font-family: var(--font-mono);
+      font-size: 10px; color: rgba(240,246,255,0.2);
+      letter-spacing: 0.12em;
+      animation: fadeUp 0.7s ease 0.6s both;
+    }
+
+    footer span { color: rgba(240,246,255,0.4); }
+
+    /* ===== NOTIFICATION TOAST ===== */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(7,20,46,0.95);
+      border: 1px solid var(--green-neon);
+      border-radius: 16px;
+      padding: 16px 28px;
+      font-family: var(--font-mono);
+      font-size: 13px; color: var(--green-neon);
+      box-shadow: 0 0 30px rgba(0,255,157,0.25);
+      z-index: 100;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ===== DECORATIVE CORNER ===== */
+    .deco-corner {
+      position: fixed; width: 60px; height: 60px;
+      border-color: rgba(14,165,255,0.2); border-style: solid;
+      pointer-events: none; z-index: 3;
+    }
+
+    .deco-corner.tl { top: 16px; left: 16px; border-width: 1px 0 0 1px; }
+    .deco-corner.tr { top: 16px; right: 16px; border-width: 1px 1px 0 0; }
+    .deco-corner.bl { bottom: 16px; left: 16px; border-width: 0 0 1px 1px; }
+    .deco-corner.br { bottom: 16px; right: 16px; border-width: 0 1px 1px 0; }
+  </style>
+</head>
+<body>
+  <!-- Background FX -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+  <div class="scan-line"></div>
+
+  <!-- Decorative corners -->
+  <div class="deco-corner tl"></div>
+  <div class="deco-corner tr"></div>
+  <div class="deco-corner bl"></div>
+  <div class="deco-corner br"></div>
+
+  <div class="wrapper">
+    <!-- HEADER -->
+    <header>
+      <div class="header-brand">
+        <div class="logo-box">
+          <img src="cropped-SMK-T.png" alt="Logo" onerror="this.style.display='none'; this.parentNode.innerHTML += '<i class=\'fas fa-graduation-cap\' style=\'font-size:20px;color:#fff\'></i>'" />
+        </div>
+        <div>
+          <div class="brand-name">Sistem Presensi Online</div>
+          <div class="brand-sub">SMK Syubbanul Wathon</div>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          Server Terhubung
+        </div>
+        <div class="terminal-id" id="terminalId">GW-01-SW-2026</div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main>
+      <!-- LEFT: Clock & Stats -->
+      <div class="panel panel-clock">
+        <div class="school-logo">
+          <img src="cropped-SMK-T.png" alt="Logo" onerror="this.style.display='none'; this.parentNode.innerHTML += '<i class=\'fas fa-school\' style=\'font-size:40px;color:#0ea5ff\'></i>'" />
+        </div>
+
+        <div>
+          <div class="clock-display" id="clock">
+            <span id="hh">00</span><span class="clock-colon">:</span><span id="mm">00</span><span class="clock-colon">:</span><span class="clock-seconds" id="ss">00</span>
+          </div>
+          <div class="date-display" id="dateDisplay">Memuat tanggal...</div>
+        </div>
+
+        <div class="arc-stats">
+          <div class="arc-item green">
+            <div class="val" id="hadir-count">32</div>
+            <div class="lbl">Hadir</div>
+          </div>
+          <div class="arc-item amber">
+            <div class="val" id="izin-count">3</div>
+            <div class="lbl">Izin</div>
+          </div>
+          <div class="arc-item">
+            <div class="val" id="alpha-count">5</div>
+            <div class="lbl">Alpha</div>
+          </div>
+        </div>
+
+        <div style="width:100%; text-align:center;">
+          <div style="font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:rgba(240,246,255,0.25); font-family:var(--font-mono);">Tahun Pelajaran 2025/2026</div>
+        </div>
+      </div>
+
+      <!-- CENTER: Input Scanner -->
+      <div class="panel panel-input">
+        <div class="scanner-ring">
+          <div class="ring-outer"></div>
+          <div class="ring-mid"></div>
+          <div class="scanner-icon">
+            <i class="fas fa-id-card"></i>
+          </div>
+          <div class="scanner-line"></div>
+        </div>
+
+        <div>
+          <div class="input-label">TAP KARTU / SCAN ID</div>
+          <div class="input-sub">Arahkan kartu RFID atau masukkan ID manual</div>
+        </div>
+
+        <div class="input-wrapper">
+          <div class="input-glow"></div>
+          <i class="fas fa-barcode input-icon"></i>
+          <input type="text" class="scan-input" id="scanInput" placeholder="ID Siswa / Guru..." autofocus autocomplete="off" />
+          <div class="input-corner tl"></div>
+          <div class="input-corner tr"></div>
+          <div class="input-corner bl"></div>
+          <div class="input-corner br"></div>
+        </div>
+
+        <div class="kbd-hint">
+          <span class="kbd">ENTER</span>
+          <span>untuk konfirmasi</span>
+        </div>
+
+        <!-- Recent log -->
+        <div class="recent-log">
+          <div class="log-title">Log Terbaru</div>
+          <div id="logContainer">
+            <div class="log-entry"><span class="log-name">Budi Santoso</span><span class="log-time">07:02:11</span></div>
+            <div class="log-entry"><span class="log-name">Siti Rahayu</span><span class="log-time">06:58:44</span></div>
+            <div class="log-entry"><span class="log-name">Ahmad Fauzi</span><span class="log-time">06:55:19</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Profile -->
+      <div class="panel panel-profile">
+        <div class="profile-frame">
+          <img src="https://ui-avatars.com/api/?name=Alsya+Kanaya+Dzikra&background=0071c2&color=fff&size=200&bold=true" alt="User Avatar" class="profile-avatar" />
+          <div class="profile-scan-h"></div>
+          <div class="profile-scan-v"></div>
+          <div class="profile-badge"><i class="fas fa-check"></i></div>
+          <div class="profile-corner tl"></div>
+          <div class="profile-corner tr"></div>
+          <div class="profile-corner bl"></div>
+          <div class="profile-corner br"></div>
+        </div>
+
+        <div>
+          <div class="profile-name">Alsya Kanaya Dzikra</div>
+          <div class="profile-role">Student — XI RPL 1</div>
+        </div>
+
+        <div class="profile-data-grid">
+          <div class="data-cell">
+            <div class="data-cell-lbl">ID Siswa</div>
+            <div class="data-cell-val">24-0471</div>
+          </div>
+          <div class="data-cell">
+            <div class="data-cell-lbl">Pukul</div>
+            <div class="data-cell-val">07:15:22</div>
+          </div>
+          <div class="data-cell success" style="grid-column: span 2;">
+            <div class="data-cell-lbl">Status Presensi</div>
+            <div class="data-cell-val" style="font-size:17px;">✓ HADIR — TEPAT WAKTU</div>
+          </div>
+        </div>
+
+        <div class="profile-id">NIS: 12345678 &nbsp;|&nbsp; UID: 0xA3F9C2</div>
+      </div>
+    </main>
+
+    <!-- PARTNERS -->
+    <div class="partners-strip">
+      <div class="partners-label">Supported By</div>
+      <div class="partner-logos">
+        <img src="e77b9ef2c622a28582de4f676f0c3720.png" alt="Logo 1" />
+        <img src="SMK-Bisa-Hebat-V3.png" alt="Logo 2" />
+        <img src="smk_pk_logo.png" alt="Logo 3" />
+        <img src="cropped-SMK-T.png" alt="Logo 4" />
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      SYUBBANUL WATHON SMART EDUCATION PLATFORM &nbsp;·&nbsp; 
+      Developed by <span>Alsya Kanaya Dzikra</span> &nbsp;·&nbsp; © 2026
+    </footer>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg">Presensi Berhasil!</span>
+  </div>
+
+  <script>
+    // ===== CLOCK =====
+    function updateClock() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      const ss = String(now.getSeconds()).padStart(2,'0');
+      document.getElementById('hh').textContent = hh;
+      document.getElementById('mm').textContent = mm;
+      document.getElementById('ss').textContent = ss;
+
+      const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+      document.getElementById('dateDisplay').textContent = now.toLocaleDateString('id-ID', opts);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ===== TOAST =====
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ===== SCAN INPUT =====
+    const input = document.getElementById('scanInput');
+    const logContainer = document.getElementById('logContainer');
+    const hadirCount = document.getElementById('hadir-count');
+
+    const demoNames = [
+      'Budi Santoso', 'Dewi Lestari', 'Fajar Nugroho', 'Hana Pertiwi',
+      'Irvan Maulana', 'Joko Widodo', 'Kartika Sari', 'Lutfi Rahman'
+    ];
+
+    document.addEventListener('click', () => input.focus());
+    window.addEventListener('load', () => input.focus());
+
+    input.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && this.value.trim()) {
+        const idVal = this.value.trim();
+        const now = new Date();
+        const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+        // Add to log
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `<span class="log-name">ID: ${idVal}</span><span class="log-time">${timeStr}</span>`;
+        entry.style.animationDelay = '0s';
+        logContainer.insertBefore(entry, logContainer.firstChild);
+        if (logContainer.children.length > 4) logContainer.removeChild(logContainer.lastChild);
+
+        // Increment counter
+        let c = parseInt(hadirCount.textContent) + 1;
+        hadirCount.textContent = c;
+
+        showToast(`Presensi ${idVal} berhasil dicatat · ${timeStr}`);
+        this.value = '';
+      }
+    });
+  </script>
+</body>
+</html>
