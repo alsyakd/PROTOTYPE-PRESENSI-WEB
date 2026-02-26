@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Presensi Pro | SMK Syubbanul Wathon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e6f0fa 100%);
+      }
+
+      .glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(6, 182, 212, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+      }
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(6, 182, 212, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
+      }
+
+      .glass-card:hover {
+        border-color: rgba(6, 182, 212, 0.4);
+        box-shadow: 0 8px 30px rgba(6, 182, 212, 0.15);
+        transform: translateY(-2px);
+      }
+
+      .running-text-container {
+        overflow: hidden;
+        position: relative;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(6, 182, 212, 0.1),
+          transparent
+        );
+      }
+
+      .running-text {
+        display: inline-block;
+        white-space: nowrap;
+        padding-left: 100%;
+        animation: marquee 20s linear infinite;
+        color: #0369a1;
+        font-weight: 500;
+      }
+
+      @keyframes marquee {
+        0% {
+          transform: translate(0, 0);
+        }
+        100% {
+          transform: translate(-100%, 0);
+        }
+      }
+
+      .entry-anim {
+        animation: slideInRight 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+      }
+
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .gradient-text {
+        background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-size: 200% 200%;
+        animation: gradient 5s ease infinite;
+      }
+
+      @keyframes gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .tab-active {
+        border-bottom: 3px solid #06b6d4;
+        color: #06b6d4;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #06b6d4;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body class="text-slate-800 min-h-screen">
+    <header
+      class="flex justify-between items-center p-4 px-8 glass sticky top-0 z-50 border-b border-cyan-400/30 shadow-sm"
+    >
+      <div class="flex items-center gap-4">
+        <div
+          class="p-2 rounded-xl bg-gradient-to-br from-cyan-400/20 to-blue-400/20 border border-cyan-400/30"
+        >
+          <img
+            src="/assets/cropped-SMK-T.png"
+            alt="Logo"
+            class="w-12 h-12 object-contain"
+          />
+        </div>
+        <div>
+          <h1
+            class="text-xl font-extrabold tracking-tight gradient-text uppercase leading-none"
+          >
+            SMK Syubbanul Wathon
+          </h1>
+          <p
+            class="text-[10px] text-cyan-700 font-bold tracking-widest uppercase mt-1"
+          >
+            Sistem Presensi Terintegrasi
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <div class="text-right border-r border-cyan-200 pr-6">
+          <div
+            id="tanggal"
+            class="text-xs font-medium text-slate-500 uppercase"
+          ></div>
+          <div
+            id="jam"
+            class="text-2xl font-black text-slate-800 tracking-tighter"
+          ></div>
+        </div>
+        <div
+          class="hidden md:block bg-green-50 px-4 py-1.5 rounded-lg border border-green-200"
+        >
+          <div class="text-[10px] text-green-600 font-bold uppercase">
+            Cloud Server
+          </div>
+          <div class="text-xs font-bold text-green-700 flex items-center gap-1">
+            <span
+              class="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"
+            ></span>
+            ONLINE
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="p-6 grid grid-cols-12 gap-6">
+      <div class="col-span-12 lg:col-span-8 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="glass-card p-4 rounded-2xl border-l-4 border-blue-500">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-xs font-bold text-blue-600 uppercase"
+                >Statistik Siswa</span
+              >
+              <i class="fas fa-user-graduate text-blue-200 text-xl"></i>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="text-center">
+                <p class="text-[10px] text-slate-500 uppercase">Hadir</p>
+                <p class="text-xl font-bold text-slate-800">1,120</p>
+              </div>
+              <div class="text-center border-x border-slate-100">
+                <p class="text-[10px] text-slate-500 uppercase">Izin</p>
+                <p class="text-xl font-bold text-slate-800">14</p>
+              </div>
+              <div class="text-center">
+                <p class="text-[10px] text-slate-500 uppercase">Alpa</p>
+                <p class="text-xl font-bold text-red-500">3</p>
+              </div>
+            </div>
+          </div>
+          <div class="glass-card p-4 rounded-2xl border-l-4 border-purple-500">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-xs font-bold text-purple-600 uppercase"
+                >Statistik Guru/Staff</span
+              >
+              <i class="fas fa-chalkboard-teacher text-purple-200 text-xl"></i>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="text-center">
+                <p class="text-[10px] text-slate-500 uppercase">Hadir</p>
+                <p class="text-xl font-bold text-slate-800">58</p>
+              </div>
+              <div class="text-center border-x border-slate-100">
+                <p class="text-[10px] text-slate-500 uppercase">Izin</p>
+                <p class="text-xl font-bold text-slate-800">2</p>
+              </div>
+              <div class="text-center">
+                <p class="text-[10px] text-slate-500 uppercase">Tugas</p>
+                <p class="text-xl font-bold text-purple-600">4</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="glass-card rounded-2xl overflow-hidden shadow-xl aspect-video relative group"
+        >
+          <iframe
+            class="w-full h-full"
+            src="https://www.youtube.com/embed/JDL7VaJcZzU?autoplay=1&mute=1&loop=1&playlist=JDL7VaJcZzU&controls=0"
+            frameborder="0"
+          ></iframe>
+          <div
+            class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent"
+          >
+            <p class="text-white text-xs font-medium">
+              <i class="fas fa-play-circle mr-2"></i> Profil SMK Syubbanul
+              Wathon
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="glass-card border-l-4 border-cyan-500 rounded-xl p-3 running-text-container"
+        >
+          <div class="running-text text-xs uppercase tracking-widest font-bold">
+            <i class="fas fa-bullhorn mr-2"></i> Informasikan kehadiran tepat
+            waktu untuk menghindari akumulasi poin kedisiplinan • Gunakan kartu
+            RFID dengan benar • SMK BISA, SMK HEBAT!
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl overflow-hidden">
+          <div
+            class="p-4 border-b border-cyan-100 flex justify-between items-center bg-cyan-50/50"
+          >
+            <h2
+              class="font-bold text-slate-800 text-sm uppercase flex items-center gap-2"
+            >
+              <i class="fas fa-clock text-cyan-600"></i> Monitoring Sesi
+              Mengajar
+            </h2>
+            <span
+              class="text-[10px] font-bold bg-white px-3 py-1 rounded-full border border-cyan-200"
+              >AKTIF</span
+            >
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
+                <tr>
+                  <th class="p-4">Jam</th>
+                  <th class="p-4">Mata Pelajaran</th>
+                  <th class="p-4">Guru</th>
+                  <th class="p-4">Ruang</th>
+                  <th class="p-4 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr class="hover:bg-blue-50/50 transition">
+                  <td class="p-4 font-mono font-bold text-cyan-700">07:00</td>
+                  <td class="p-4 font-bold">Pemrograman Web</td>
+                  <td class="p-4">Ust. Djayus, M.Kom</td>
+                  <td class="p-4 text-slate-500">Lab RPL 1</td>
+                  <td class="p-4 text-center">
+                    <span
+                      class="bg-green-100 text-green-700 px-2 py-1 rounded-md font-bold"
+                      >MASUK</span
+                    >
+                  </td>
+                </tr>
+                <tr class="hover:bg-blue-50/50 transition">
+                  <td class="p-4 font-mono font-bold text-cyan-700">07:00</td>
+                  <td class="p-4 font-bold">Bahasa Inggris</td>
+                  <td class="p-4">Ustzh. Sarah, M.Pd</td>
+                  <td class="p-4 text-slate-500">Kelas XI-A</td>
+                  <td class="p-4 text-center">
+                    <span
+                      class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-md font-bold"
+                      >BELUM</span
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-span-12 lg:col-span-4">
+        <div
+          class="glass-card rounded-2xl flex flex-col h-[850px] sticky top-24"
+        >
+          <div class="flex border-b border-cyan-100">
+            <button
+              onclick="switchTab('siswa')"
+              id="tab-siswa"
+              class="flex-1 py-4 text-xs font-bold uppercase transition-all tab-active"
+            >
+              <i class="fas fa-user-graduate mr-2"></i> Siswa
+            </button>
+            <button
+              onclick="switchTab('guru')"
+              id="tab-guru"
+              class="flex-1 py-4 text-xs font-bold uppercase text-slate-400 hover:text-cyan-600 transition-all"
+            >
+              <i class="fas fa-user-tie mr-2"></i> Guru/Staff
+            </button>
+          </div>
+
+          <div class="p-3 bg-cyan-50/30 flex items-center justify-between">
+            <span
+              class="text-[10px] font-bold text-cyan-700 uppercase tracking-tighter"
+              >Aktivitas Real-time</span
+            >
+            <span
+              class="flex items-center gap-1 text-[9px] font-bold text-red-500"
+            >
+              <span
+                class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"
+              ></span>
+              LIVE FEED
+            </span>
+          </div>
+
+          <div
+            id="presensi-container"
+            class="flex-1 overflow-y-auto p-4 space-y-3"
+          ></div>
+
+          <div
+            class="p-3 text-center border-t border-slate-100 bg-slate-50/50 rounded-b-2xl"
+          >
+            <p class="text-[9px] text-slate-400 font-medium">
+              Auto-refresh aktif • Menampilkan 20 log terakhir
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      let currentTab = "siswa";
+
+      function updateDateTime() {
+        const now = new Date();
+        const options = {
+          weekday: "long",
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        };
+        document.getElementById("jam").textContent = now.toLocaleTimeString(
+          "id-ID",
+          { hour12: false },
+        );
+        document.getElementById("tanggal").textContent = now.toLocaleDateString(
+          "id-ID",
+          options,
+        );
+      }
+      setInterval(updateDateTime, 1000);
+      updateDateTime();
+
+      function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById("tab-siswa").className =
+          `flex-1 py-4 text-xs font-bold uppercase transition-all ${tab === "siswa" ? "tab-active" : "text-slate-400"}`;
+        document.getElementById("tab-guru").className =
+          `flex-1 py-4 text-xs font-bold uppercase transition-all ${tab === "guru" ? "tab-active" : "text-slate-400"}`;
+        document.getElementById("presensi-container").innerHTML = "";
+        // Load initial data for the tab
+        for (let i = 0; i < 5; i++) addPresensi();
+      }
+
+      const dataSiswa = {
+        names: [
+          "Ahmad Fauzan",
+          "Naya Putri",
+          "Rehan Bumi",
+          "Siti Aminah",
+          "Dimas Prayoga",
+          "Zahra Aulia",
+        ],
+        subs: [
+          "XII RPL 1",
+          "XI TKJ 2",
+          "X MM 1",
+          "XII RPL 2",
+          "X TKJ 1",
+          "XI RPL 3",
+        ],
+      };
+
+      const dataGuru = {
+        names: [
+          "Ust. Djayus, M.Kom",
+          "Ust. Solihin, S.T",
+          "Ustzh. Maria, S.Pd",
+          "Ust. Mahfud, M.T",
+          "H. Ahmad Sodik",
+          "Ustzh. Sarah, M.Pd",
+        ],
+        subs: [
+          "Guru Produktif",
+          "Guru Normatif",
+          "Staff Kurikulum",
+          "Kepala Lab",
+          "Kesiswaan",
+          "Guru Bahasa",
+        ],
+      };
+
+      function addPresensi() {
+        const container = document.getElementById("presensi-container");
+        const data = currentTab === "siswa" ? dataSiswa : dataGuru;
+
+        const name = data.names[Math.floor(Math.random() * data.names.length)];
+        const sub = data.subs[Math.floor(Math.random() * data.subs.length)];
+        const time = new Date().toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        const card = `
+            <div class="flex items-center gap-3 p-3 glass-card rounded-xl border border-cyan-100 entry-anim">
+                <div class="relative">
+                    <img src="https://i.pravatar.cc/100?u=${name}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="font-bold text-xs text-slate-800 truncate">${name}</h4>
+                    <p class="text-[9px] text-cyan-600 font-bold uppercase tracking-tighter">${sub}</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-[8px] font-black px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100">${time}</span>
+                </div>
+            </div>
+        `;
+
+        container.insertAdjacentHTML("afterbegin", card);
+        if (container.children.length > 20) container.lastElementChild.remove();
+      }
+
+      // Initial load
+      for (let i = 0; i < 6; i++) {
+        setTimeout(addPresensi, i * 300);
+      }
+
+      // Auto Loop
+      setInterval(() => {
+        addPresensi();
+      }, 4000);
+    </script>
+  </body>
+</html>

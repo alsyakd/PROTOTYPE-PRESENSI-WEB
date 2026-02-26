@@ -1,0 +1,1437 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Presensi | SMK Syubbanul Wathon</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* =====================================================
+       DESIGN TOKENS
+    ===================================================== */
+      :root {
+        --bg: #f0f7ff;
+        --surface: #ffffff;
+        --surface2: #f8fbff;
+        --border: #dbeafe;
+        --primary: #1d72e8;
+        --primary-soft: #eff6ff;
+        --accent: #0ea5e9;
+        --green: #16a34a;
+        --green-soft: #f0fdf4;
+        --yellow: #ca8a04;
+        --yellow-soft: #fefce8;
+        --red: #dc2626;
+        --red-soft: #fef2f2;
+        --purple: #7c3aed;
+        --purple-soft: #f5f3ff;
+        --text: #0f172a;
+        --text2: #475569;
+        --text3: #94a3b8;
+        --radius: 16px;
+        --shadow: 0 2px 16px rgba(0, 0, 0, 0.05);
+      }
+
+      /* =====================================================
+       RESET & BASE
+    ===================================================== */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Outfit", sans-serif;
+        background: var(--bg);
+        background-image:
+          radial-gradient(
+            circle at 15% 15%,
+            rgba(29, 114, 232, 0.07) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 85% 80%,
+            rgba(14, 165, 233, 0.07) 0%,
+            transparent 50%
+          );
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      /* TV mode: no scroll */
+      @media (min-width: 1280px) {
+        body {
+          overflow: hidden;
+        }
+        .dashboard {
+          height: 100vh;
+          overflow: hidden;
+        }
+      }
+
+      /* =====================================================
+       DASHBOARD SHELL
+    ===================================================== */
+      .dashboard {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      /* =====================================================
+       HEADER
+    ===================================================== */
+      header {
+        background: var(--surface);
+        border-bottom: 2px solid var(--border);
+        padding: 0 1rem;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        flex-shrink: 0;
+        box-shadow: 0 2px 12px rgba(29, 114, 232, 0.06);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+      @media (min-width: 640px) {
+        header {
+          padding: 0 1.5rem;
+          height: 64px;
+        }
+      }
+      @media (min-width: 1024px) {
+        header {
+          padding: 0 2rem;
+          height: 72px;
+        }
+      }
+
+      .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        min-width: 0;
+        flex-shrink: 1;
+      }
+
+      .logo-icon {
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, #1d72e8, #0ea5e9);
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        color: white;
+        box-shadow: 0 4px 12px rgba(29, 114, 232, 0.3);
+      }
+      @media (min-width: 640px) {
+        .logo-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 13px;
+          font-size: 1.3rem;
+        }
+      }
+      @media (min-width: 1024px) {
+        .logo-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
+          font-size: 1.4rem;
+        }
+      }
+      .logo-icon img {
+        width: 75%;
+        height: 75%;
+        object-fit: contain;
+      }
+
+      .school-name {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--primary);
+        letter-spacing: -0.3px;
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      @media (min-width: 480px) {
+        .school-name {
+          font-size: 1rem;
+        }
+      }
+      @media (min-width: 768px) {
+        .school-name {
+          font-size: 1.2rem;
+        }
+      }
+      @media (min-width: 1024px) {
+        .school-name {
+          font-size: 1.25rem;
+        }
+      }
+
+      .school-sub {
+        font-size: 0.52rem;
+        font-weight: 600;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-top: 2px;
+        display: none;
+      }
+      @media (min-width: 480px) {
+        .school-sub {
+          display: block;
+          font-size: 0.55rem;
+        }
+      }
+      @media (min-width: 768px) {
+        .school-sub {
+          font-size: 0.62rem;
+          letter-spacing: 2px;
+        }
+      }
+
+      .header-center {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: var(--primary-soft);
+        border: 1.5px solid var(--border);
+        padding: 0.3rem 0.7rem;
+        border-radius: 99px;
+        flex-shrink: 0;
+      }
+      @media (min-width: 640px) {
+        .header-center {
+          padding: 0.35rem 0.9rem;
+          gap: 0.4rem;
+        }
+      }
+
+      .live-dot {
+        width: 7px;
+        height: 7px;
+        background: #ef4444;
+        border-radius: 50%;
+        animation: blink 1.2s ease-in-out infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.4;
+          transform: scale(0.75);
+        }
+      }
+      .live-label {
+        font-size: 0.58rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+      }
+      @media (min-width: 640px) {
+        .live-label {
+          font-size: 0.65rem;
+          letter-spacing: 1.5px;
+        }
+      }
+      .live-word {
+        display: none;
+      }
+      @media (min-width: 480px) {
+        .live-word {
+          display: inline;
+        }
+      }
+
+      .clock-section {
+        text-align: right;
+        flex-shrink: 0;
+      }
+      .clock-time {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary);
+        letter-spacing: -0.5px;
+        line-height: 1;
+      }
+      @media (min-width: 480px) {
+        .clock-time {
+          font-size: 1.4rem;
+        }
+      }
+      @media (min-width: 768px) {
+        .clock-time {
+          font-size: 1.8rem;
+          letter-spacing: -1px;
+        }
+      }
+      @media (min-width: 1024px) {
+        .clock-time {
+          font-size: 2rem;
+        }
+      }
+
+      .clock-date {
+        font-size: 0.5rem;
+        font-weight: 600;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        margin-top: 2px;
+        display: none;
+      }
+      @media (min-width: 640px) {
+        .clock-date {
+          display: block;
+          font-size: 0.58rem;
+        }
+      }
+      @media (min-width: 768px) {
+        .clock-date {
+          font-size: 0.65rem;
+        }
+      }
+
+      /* =====================================================
+       MAIN GRID
+       xs  (< 640):   1 col stack
+       sm  (>=640):   1 col (wider padding)
+       md  (>=768):   2 col
+       lg  (>=1024):  3 col
+       xl  (>=1280):  3 col fixed (TV)
+    ===================================================== */
+      .main-grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+        padding: 0.85rem 1rem;
+        overflow-y: auto;
+      }
+      @media (min-width: 640px) {
+        .main-grid {
+          padding: 1rem 1.25rem;
+          gap: 1rem;
+        }
+      }
+      @media (min-width: 768px) {
+        .main-grid {
+          grid-template-columns: 1fr 1fr;
+          padding: 1.1rem 1.5rem;
+        }
+      }
+      @media (min-width: 1024px) {
+        .main-grid {
+          grid-template-columns: 1fr 1fr 290px;
+          padding: 1.25rem 2rem;
+        }
+      }
+      @media (min-width: 1280px) {
+        .main-grid {
+          grid-template-columns: 1fr 1fr 340px;
+          overflow: hidden;
+        }
+      }
+
+      /* =====================================================
+       COLUMNS
+    ===================================================== */
+      .col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        min-width: 0;
+      }
+      @media (min-width: 768px) {
+        .col {
+          gap: 1rem;
+        }
+      }
+
+      /* Feed column behaviour */
+      .col-feed {
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* On mobile: feed goes to bottom */
+      @media (max-width: 767px) {
+        .col-feed {
+          order: 3;
+        }
+      }
+      /* On tablet: feed spans full width */
+      @media (min-width: 768px) and (max-width: 1023px) {
+        .col-feed {
+          grid-column: 1 / -1;
+        }
+      }
+
+      /* =====================================================
+       CARD BASE
+    ===================================================== */
+      .card {
+        background: var(--surface);
+        border-radius: var(--radius);
+        border: 1.5px solid var(--border);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .card-header {
+        padding: 0.7rem 1rem;
+        border-bottom: 1.5px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      @media (min-width: 768px) {
+        .card-header {
+          padding: 0.8rem 1.2rem;
+        }
+      }
+
+      .card-title {
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text2);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .card-title i {
+        color: var(--primary);
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 0.18rem 0.55rem;
+        border-radius: 6px;
+        font-size: 0.56rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+      }
+      .badge-green {
+        background: var(--green-soft);
+        color: var(--green);
+        border: 1px solid #bbf7d0;
+      }
+      .badge-yellow {
+        background: var(--yellow-soft);
+        color: var(--yellow);
+        border: 1px solid #fef08a;
+      }
+      .badge-red {
+        background: var(--red-soft);
+        color: var(--red);
+        border: 1px solid #fecaca;
+      }
+
+      /* =====================================================
+       STAT CARDS
+    ===================================================== */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+      @media (min-width: 480px) {
+        .stats-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (min-width: 768px) and (max-width: 1023px) {
+        /* on 2-col layout, stats-grid inside first col stays 2-col naturally */
+        .stats-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .stat-card {
+        background: var(--surface);
+        border-radius: var(--radius);
+        border: 1.5px solid var(--border);
+        box-shadow: var(--shadow);
+        padding: 0.85rem 1rem;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      @media (min-width: 768px) {
+        .stat-card {
+          padding: 1rem 1.2rem;
+        }
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+      }
+      .stat-card.blue::before {
+        background: linear-gradient(90deg, #1d72e8, #0ea5e9);
+      }
+      .stat-card.purple::before {
+        background: linear-gradient(90deg, #7c3aed, #a855f7);
+      }
+
+      .stat-label {
+        font-size: 0.57rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text3);
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+      @media (min-width: 768px) {
+        .stat-label {
+          font-size: 0.6rem;
+          margin-bottom: 0.75rem;
+        }
+      }
+
+      .stat-row {
+        display: grid;
+        grid-template-columns: 1fr 1px 1fr 1px 1fr;
+        align-items: center;
+        width: 100%;
+      }
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        padding: 0.15rem 0;
+      }
+      .stat-item-label {
+        font-size: 0.53rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.9px;
+        color: var(--text3);
+        white-space: nowrap;
+      }
+      @media (min-width: 768px) {
+        .stat-item-label {
+          font-size: 0.58rem;
+        }
+      }
+      .stat-item-value {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.4rem;
+        font-weight: 700;
+        line-height: 1;
+      }
+      @media (min-width: 768px) {
+        .stat-item-value {
+          font-size: 1.55rem;
+        }
+      }
+      @media (min-width: 1280px) {
+        .stat-item-value {
+          font-size: 1.75rem;
+        }
+      }
+
+      .v-green {
+        color: var(--green);
+      }
+      .v-yellow {
+        color: var(--yellow);
+      }
+      .v-red {
+        color: var(--red);
+      }
+      .v-purple {
+        color: var(--purple);
+      }
+      .v-blue {
+        color: var(--primary);
+      }
+
+      .stat-divider {
+        width: 1px;
+        height: 36px;
+        background: var(--border);
+        justify-self: center;
+      }
+      @media (min-width: 1280px) {
+        .stat-divider {
+          height: 40px;
+        }
+      }
+
+      .progress-bar {
+        height: 5px;
+        background: var(--border);
+        border-radius: 99px;
+        overflow: hidden;
+        margin-top: 0.7rem;
+      }
+      .progress-fill {
+        height: 100%;
+        border-radius: 99px;
+        transition: width 1s ease;
+      }
+      .fill-green {
+        background: linear-gradient(90deg, #16a34a, #22c55e);
+      }
+      .fill-purple {
+        background: linear-gradient(90deg, #7c3aed, #a855f7);
+      }
+
+      .attendance-rate {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 0.35rem;
+      }
+      .rate-num {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.72rem;
+        font-weight: 700;
+      }
+      .rate-label {
+        font-size: 0.5rem;
+        font-weight: 600;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      @media (min-width: 768px) {
+        .rate-num {
+          font-size: 0.75rem;
+        }
+        .rate-label {
+          font-size: 0.52rem;
+        }
+      }
+
+      /* =====================================================
+       TABLE
+    ===================================================== */
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 360px;
+      }
+      thead tr {
+        background: var(--surface2);
+      }
+      th {
+        padding: 0.55rem 0.8rem;
+        font-size: 0.56rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.3px;
+        color: var(--text3);
+        text-align: left;
+        border-bottom: 1.5px solid var(--border);
+        white-space: nowrap;
+      }
+      td {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.76rem;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr:hover td {
+        background: var(--primary-soft);
+        transition: background 0.15s;
+      }
+      .td-time {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        color: var(--primary);
+      }
+      .td-name {
+        font-weight: 700;
+      }
+      .td-sub {
+        color: var(--text2);
+      }
+
+      /* Hide ruang column on small screens */
+      .col-ruang {
+        display: none;
+      }
+      @media (min-width: 640px) {
+        .col-ruang {
+          display: table-cell;
+        }
+      }
+
+      /* =====================================================
+       VIDEO
+    ===================================================== */
+      .video-wrap {
+        aspect-ratio: 16/9;
+        overflow: hidden;
+        border-radius: var(--radius);
+        border: 1.5px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+      .video-wrap iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: block;
+      }
+
+      /* =====================================================
+       INFO SEKOLAH
+    ===================================================== */
+      .info-grid {
+        padding: 0.8rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+      }
+      @media (min-width: 768px) {
+        .info-grid {
+          padding: 0.85rem;
+          gap: 0.7rem;
+        }
+      }
+      .info-item {
+        border-radius: 11px;
+        padding: 0.7rem 0.85rem;
+        border: 1px solid var(--border);
+      }
+      .info-item-label {
+        font-size: 0.52rem;
+        font-weight: 800;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 1.3px;
+        margin-bottom: 3px;
+      }
+      @media (min-width: 768px) {
+        .info-item-label {
+          font-size: 0.56rem;
+        }
+      }
+      .info-item-value {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.3rem;
+        font-weight: 700;
+        line-height: 1;
+      }
+      @media (min-width: 768px) {
+        .info-item-value {
+          font-size: 1.45rem;
+        }
+      }
+      @media (min-width: 1280px) {
+        .info-item-value {
+          font-size: 1.6rem;
+        }
+      }
+
+      /* =====================================================
+       LIVE FEED
+    ===================================================== */
+      .feed-card {
+        background: var(--surface);
+        border-radius: var(--radius);
+        border: 1.5px solid var(--border);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* TV: feed fills full column height */
+      @media (min-width: 1280px) {
+        .col-feed {
+          height: 100%;
+          overflow: hidden;
+        }
+        .feed-card {
+          flex: 1;
+          overflow: hidden;
+        }
+      }
+
+      .tabs {
+        display: flex;
+        border-bottom: 1.5px solid var(--border);
+      }
+      .tab-btn {
+        flex: 1;
+        padding: 0.65rem 0.4rem;
+        font-size: 0.6rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: var(--text3);
+        transition: all 0.2s;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -1.5px;
+      }
+      .tab-btn:hover {
+        color: var(--primary);
+      }
+      .tab-btn.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+        background: var(--primary-soft);
+      }
+
+      .feed-subheader {
+        padding: 0.4rem 0.85rem;
+        background: var(--surface2);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .feed-sublabel {
+        font-size: 0.56rem;
+        font-weight: 700;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 1.3px;
+      }
+      .feed-live {
+        font-size: 0.56rem;
+        font-weight: 700;
+        color: #ef4444;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      #presensi-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.6rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        max-height: 300px;
+      }
+      @media (min-width: 768px) {
+        #presensi-container {
+          max-height: 260px;
+        }
+      }
+      @media (min-width: 1280px) {
+        #presensi-container {
+          max-height: none;
+        }
+      }
+
+      #presensi-container::-webkit-scrollbar {
+        width: 3px;
+      }
+      #presensi-container::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      #presensi-container::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 10px;
+      }
+
+      .entry-card {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.5rem 0.7rem;
+        background: var(--surface2);
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        animation: slideIn 0.35s cubic-bezier(0.23, 1, 0.32, 1) both;
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        overflow: hidden;
+        flex-shrink: 0;
+        border: 1.5px solid var(--border);
+      }
+      .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .entry-name {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1.2;
+      }
+      .entry-sub {
+        font-size: 0.56rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-top: 1px;
+      }
+      .entry-time {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.58rem;
+        font-weight: 700;
+        color: var(--text3);
+        white-space: nowrap;
+      }
+      .entry-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        flex-shrink: 0;
+      }
+
+      .feed-footer {
+        padding: 0.42rem 1rem;
+        border-top: 1px solid var(--border);
+        background: var(--surface2);
+        text-align: center;
+        flex-shrink: 0;
+      }
+      .feed-footer p {
+        font-size: 0.54rem;
+        color: var(--text3);
+        font-weight: 600;
+      }
+
+      /* =====================================================
+       TICKER
+    ===================================================== */
+      .ticker {
+        background: var(--primary);
+        color: white;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      @media (min-width: 768px) {
+        .ticker {
+          height: 36px;
+        }
+      }
+
+      .ticker-label {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 0 0.8rem;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.56rem;
+        font-weight: 800;
+        letter-spacing: 1.3px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      @media (min-width: 768px) {
+        .ticker-label {
+          padding: 0 1rem;
+          font-size: 0.6rem;
+        }
+      }
+      .ticker-word {
+        display: none;
+      }
+      @media (min-width: 640px) {
+        .ticker-word {
+          display: inline;
+        }
+      }
+
+      .ticker-track {
+        flex: 1;
+        overflow: hidden;
+      }
+      .ticker-text {
+        display: inline-block;
+        white-space: nowrap;
+        padding-left: 100%;
+        animation: scroll 32s linear infinite;
+        font-size: 0.66rem;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        opacity: 0.92;
+      }
+      @media (min-width: 768px) {
+        .ticker-text {
+          font-size: 0.72rem;
+        }
+      }
+      @keyframes scroll {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-100%);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <!-- ===== HEADER ===== -->
+      <header>
+        <div class="logo-section">
+          <div class="logo-icon">
+            <img
+              src="/assets/cropped-SMK-T.png"
+              alt="Logo"
+              onerror="
+                this.parentElement.innerHTML = '<i class=\'fas fa-school\'></i>'
+              "
+            />
+          </div>
+          <div style="min-width: 0">
+            <div class="school-name">SMK Syubbanul Wathon</div>
+            <div class="school-sub">Sistem Presensi Terintegrasi</div>
+          </div>
+        </div>
+
+        <div class="header-center">
+          <div class="live-dot"></div>
+          <span class="live-label"
+            ><span class="live-word">Monitoring </span>Live</span
+          >
+        </div>
+
+        <div class="clock-section">
+          <div class="clock-time" id="jam">00:00:00</div>
+          <div class="clock-date" id="tanggal"></div>
+        </div>
+      </header>
+
+      <!-- ===== MAIN GRID ===== -->
+      <div class="main-grid">
+        <!-- COL 1 : Stats + Tabel -->
+        <div class="col">
+          <div class="stats-grid">
+            <!-- Siswa -->
+            <div class="stat-card blue">
+              <div class="stat-label">
+                <i
+                  class="fas fa-user-graduate"
+                  style="color: var(--primary)"
+                ></i
+                >Siswa Hari Ini
+              </div>
+              <div class="stat-row">
+                <div class="stat-item">
+                  <div class="stat-item-label">Hadir</div>
+                  <div class="stat-item-value v-green">1,120</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <div class="stat-item-label">Izin</div>
+                  <div class="stat-item-value v-yellow">14</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <div class="stat-item-label">Alpa</div>
+                  <div class="stat-item-value v-red">3</div>
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill fill-green" style="width: 98%"></div>
+              </div>
+              <div class="attendance-rate">
+                <span class="rate-num v-green">98.4%</span>
+                <span class="rate-label">Tingkat Kehadiran</span>
+              </div>
+            </div>
+
+            <!-- Guru -->
+            <div class="stat-card purple">
+              <div class="stat-label">
+                <i
+                  class="fas fa-chalkboard-teacher"
+                  style="color: var(--purple)"
+                ></i
+                >Guru &amp; Staff
+              </div>
+              <div class="stat-row">
+                <div class="stat-item">
+                  <div class="stat-item-label">Hadir</div>
+                  <div class="stat-item-value v-green">58</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <div class="stat-item-label">Izin</div>
+                  <div class="stat-item-value v-yellow">2</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <div class="stat-item-label">Tugas</div>
+                  <div class="stat-item-value v-purple">4</div>
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill fill-purple" style="width: 91%"></div>
+              </div>
+              <div class="attendance-rate">
+                <span class="rate-num v-purple">91.2%</span>
+                <span class="rate-label">Tingkat Kehadiran</span>
+              </div>
+            </div>
+          </div>
+          <!-- /stats-grid -->
+
+          <!-- Tabel -->
+          <div class="card" style="flex: 1; overflow: hidden">
+            <div class="card-header">
+              <span class="card-title"
+                ><i class="fas fa-chalkboard"></i> Monitoring Sesi
+                Mengajar</span
+              >
+              <span class="badge badge-green">Aktif</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Jam</th>
+                    <th>Mata Pelajaran</th>
+                    <th>Guru</th>
+                    <th class="col-ruang">Ruang</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="td-time">07:00</td>
+                    <td class="td-name">Pemrograman Web</td>
+                    <td class="td-sub">Ust. Djayus, M.Kom</td>
+                    <td class="td-sub col-ruang">Lab RPL 1</td>
+                    <td><span class="badge badge-green">Masuk</span></td>
+                  </tr>
+                  <tr>
+                    <td class="td-time">07:00</td>
+                    <td class="td-name">Bahasa Inggris</td>
+                    <td class="td-sub">Ustzh. Sarah, M.Pd</td>
+                    <td class="td-sub col-ruang">Kelas XI-A</td>
+                    <td><span class="badge badge-yellow">Belum</span></td>
+                  </tr>
+                  <tr>
+                    <td class="td-time">08:30</td>
+                    <td class="td-name">Matematika</td>
+                    <td class="td-sub">Ust. Mahfud, M.T</td>
+                    <td class="td-sub col-ruang">Kelas XII-B</td>
+                    <td><span class="badge badge-green">Masuk</span></td>
+                  </tr>
+                  <tr>
+                    <td class="td-time">08:30</td>
+                    <td class="td-name">Jaringan Komputer</td>
+                    <td class="td-sub">Ust. Solihin, S.T</td>
+                    <td class="td-sub col-ruang">Lab TKJ</td>
+                    <td><span class="badge badge-green">Masuk</span></td>
+                  </tr>
+                  <tr>
+                    <td class="td-time">10:00</td>
+                    <td class="td-name">Seni Budaya</td>
+                    <td class="td-sub">Ustzh. Maria, S.Pd</td>
+                    <td class="td-sub col-ruang">Kelas X-C</td>
+                    <td><span class="badge badge-yellow">Belum</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- /col1 -->
+
+        <!-- COL 2 : Video + Info Sekolah -->
+        <div class="col">
+          <div class="video-wrap">
+            <iframe
+              src="https://www.youtube.com/embed/JDL7VaJcZzU?autoplay=1&mute=1&loop=1&playlist=JDL7VaJcZzU&controls=0&rel=0"
+              allow="autoplay; encrypted-media"
+              allowfullscreen
+            >
+            </iframe>
+          </div>
+
+          <div class="card" style="flex: 1">
+            <div class="card-header">
+              <span class="card-title"
+                ><i class="fas fa-info-circle"></i> Info Sekolah</span
+              >
+            </div>
+            <div class="info-grid">
+              <div
+                class="info-item"
+                style="
+                  background: var(--primary-soft);
+                  border-color: var(--border);
+                "
+              >
+                <div class="info-item-label">Total Siswa</div>
+                <div class="info-item-value" style="color: var(--primary)">
+                  1,137
+                </div>
+              </div>
+              <div
+                class="info-item"
+                style="background: var(--purple-soft); border-color: #ede9fe"
+              >
+                <div class="info-item-label">Rombel Aktif</div>
+                <div class="info-item-value" style="color: var(--purple)">
+                  36
+                </div>
+              </div>
+              <div
+                class="info-item"
+                style="background: var(--green-soft); border-color: #bbf7d0"
+              >
+                <div class="info-item-label">Guru &amp; Staff</div>
+                <div class="info-item-value" style="color: var(--green)">
+                  64
+                </div>
+              </div>
+              <div
+                class="info-item"
+                style="background: var(--yellow-soft); border-color: #fef08a"
+              >
+                <div class="info-item-label">Program Keahlian</div>
+                <div class="info-item-value" style="color: var(--yellow)">
+                  4
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /col2 -->
+
+        <!-- COL 3 : Live Feed -->
+        <div class="col-feed">
+          <div class="feed-card">
+            <div class="tabs">
+              <button
+                class="tab-btn active"
+                id="tab-siswa"
+                onclick="switchTab('siswa')"
+              >
+                <i class="fas fa-user-graduate" style="margin-right: 4px"></i
+                >Siswa
+              </button>
+              <button class="tab-btn" id="tab-guru" onclick="switchTab('guru')">
+                <i class="fas fa-user-tie" style="margin-right: 4px"></i
+                >Guru/Staff
+              </button>
+            </div>
+            <div class="feed-subheader">
+              <span class="feed-sublabel">Aktivitas Real-time</span>
+              <span class="feed-live"><span class="live-dot"></span>LIVE</span>
+            </div>
+            <div id="presensi-container"></div>
+            <div class="feed-footer">
+              <p>Auto-refresh aktif &bull; 20 log terakhir</p>
+            </div>
+          </div>
+        </div>
+        <!-- /col-feed -->
+      </div>
+      <!-- /main-grid -->
+
+      <!-- ===== TICKER ===== -->
+      <div class="ticker">
+        <div class="ticker-label">
+          <i class="fas fa-bullhorn"></i>
+          <span class="ticker-word">Info</span>
+        </div>
+        <div class="ticker-track">
+          <span class="ticker-text">
+            📢 Informasikan kehadiran tepat waktu untuk menghindari akumulasi
+            poin kedisiplinan &nbsp;•&nbsp; Gunakan kartu RFID dengan benar saat
+            tap di mesin presensi &nbsp;•&nbsp; Jadwal ujian tengah semester
+            akan diumumkan melalui papan informasi sekolah &nbsp;•&nbsp; Siswa
+            yang terlambat lebih dari 15 menit wajib melapor ke guru piket
+            &nbsp;•&nbsp; SMK BISA, SMK HEBAT! 🎓
+          </span>
+        </div>
+      </div>
+    </div>
+    <!-- /dashboard -->
+
+    <script>
+      // ===== CLOCK =====
+      function updateDateTime() {
+        const now = new Date();
+        const jamEl = document.getElementById("jam");
+        const tglEl = document.getElementById("tanggal");
+        if (jamEl)
+          jamEl.textContent = now.toLocaleTimeString("id-ID", {
+            hour12: false,
+          });
+        if (tglEl) {
+          const opts = {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          };
+          tglEl.textContent = now
+            .toLocaleDateString("id-ID", opts)
+            .toUpperCase();
+        }
+      }
+      setInterval(updateDateTime, 1000);
+      updateDateTime();
+
+      // ===== TAB SWITCH =====
+      let currentTab = "siswa";
+      function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById("tab-siswa").className =
+          "tab-btn" + (tab === "siswa" ? " active" : "");
+        document.getElementById("tab-guru").className =
+          "tab-btn" + (tab === "guru" ? " active" : "");
+        document.getElementById("presensi-container").innerHTML = "";
+        for (let i = 0; i < 6; i++) setTimeout(addEntry, i * 140);
+      }
+
+      // ===== DATA =====
+      const dataSiswa = {
+        names: [
+          "Ahmad Fauzan",
+          "Naya Putri Andini",
+          "Rehan Bumi Pratama",
+          "Siti Aminah",
+          "Dimas Prayoga",
+          "Zahra Aulia Rahma",
+          "M. Rizky Firmansyah",
+          "Fita Nurhaliza",
+          "Arya Dwiputra",
+          "Salma Azzahra",
+        ],
+        subs: [
+          "XII RPL 1",
+          "XI TKJ 2",
+          "X MM 1",
+          "XII RPL 2",
+          "X TKJ 1",
+          "XI RPL 3",
+          "XI MM 2",
+          "XII TKJ 1",
+          "X RPL 1",
+          "XI TKJ 1",
+        ],
+      };
+      const dataGuru = {
+        names: [
+          "Ust. Djayus, M.Kom",
+          "Ust. Solihin, S.T",
+          "Ustzh. Maria, S.Pd",
+          "Ust. Mahfud, M.T",
+          "H. Ahmad Sodik",
+          "Ustzh. Sarah, M.Pd",
+        ],
+        subs: [
+          "Guru Produktif",
+          "Guru Normatif",
+          "Staff Kurikulum",
+          "Kepala Lab",
+          "Kesiswaan",
+          "Guru Bahasa",
+        ],
+      };
+
+      // ===== FEED ENTRY =====
+      function addEntry() {
+        const container = document.getElementById("presensi-container");
+        const data = currentTab === "siswa" ? dataSiswa : dataGuru;
+        const name = data.names[Math.floor(Math.random() * data.names.length)];
+        const sub = data.subs[Math.floor(Math.random() * data.subs.length)];
+        const time = new Date().toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+
+        const div = document.createElement("div");
+        div.className = "entry-card";
+        div.innerHTML = `
+      <div class="avatar">
+        <img src="https://i.pravatar.cc/80?u=${encodeURIComponent(name)}${Date.now()}" alt="${name}"/>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="entry-name">${name}</div>
+        <div class="entry-sub">${sub}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">
+        <div class="entry-dot"></div>
+        <div class="entry-time">${time}</div>
+      </div>
+    `;
+        container.insertBefore(div, container.firstChild);
+        if (container.children.length > 20) container.lastElementChild.remove();
+      }
+
+      for (let i = 0; i < 8; i++) setTimeout(addEntry, i * 180);
+      setInterval(addEntry, 3500);
+    </script>
+  </body>
+</html>

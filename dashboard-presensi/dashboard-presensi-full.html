@@ -1,0 +1,3273 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Presensi | SMK Syubbanul Wathon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --cyan: #06b6d4;
+        --blue: #3b82f6;
+        --purple: #8b5cf6;
+        --bg: #080f1a;
+        --surface: rgba(255, 255, 255, 0.04);
+        --border: rgba(6, 182, 212, 0.18);
+        --text: #e2e8f0;
+        --muted: #64748b;
+        --sw: 240px;
+        --hh: 56px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        overflow-x: hidden;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+          radial-gradient(
+            ellipse 70% 50% at 5% 5%,
+            rgba(6, 182, 212, 0.13) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 60% 50% at 95% 90%,
+            rgba(59, 130, 246, 0.1) 0%,
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse 40% 40% at 50% 50%,
+            rgba(139, 92, 246, 0.05) 0%,
+            transparent 60%
+          );
+      }
+      .app {
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* SIDEBAR */
+      .sidebar {
+        width: var(--sw);
+        flex-shrink: 0;
+        background: rgba(10, 16, 28, 0.97);
+        backdrop-filter: blur(20px);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 200;
+        transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+      }
+      .sidebar.hidden {
+        transform: translateX(-100%);
+      }
+      .sb-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        min-height: var(--hh);
+      }
+      .sb-logo {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 14px;
+        color: #fff;
+      }
+      .sb-title {
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1.3;
+      }
+      .sb-title small {
+        display: block;
+        font-size: 9px;
+        color: var(--muted);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-top: 2px;
+      }
+      nav {
+        flex: 1;
+        padding: 10px 8px;
+        overflow-y: auto;
+      }
+      .nav-sec {
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #334155;
+        padding: 4px 10px 6px;
+        margin-top: 8px;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 9px 12px;
+        border-radius: 11px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        transition: all 0.2s;
+        white-space: nowrap;
+        margin-bottom: 2px;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+      }
+      .nav-item i {
+        width: 18px;
+        text-align: center;
+        font-size: 13px;
+        flex-shrink: 0;
+      }
+      .nav-badge {
+        margin-left: auto;
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        font-size: 9px;
+        font-weight: 800;
+        padding: 1px 6px;
+        border-radius: 99px;
+      }
+      .nav-item:hover {
+        background: rgba(6, 182, 212, 0.08);
+        color: #94a3b8;
+      }
+      .nav-item.active {
+        background: rgba(6, 182, 212, 0.12);
+        color: #06b6d4;
+      }
+      .sb-footer {
+        padding: 10px 8px;
+        border-top: 1px solid var(--border);
+      }
+      .user-chip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: 11px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+      }
+      .user-av {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      /* OVERLAY */
+      .overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(4px);
+        z-index: 150;
+      }
+      .overlay.show {
+        display: block;
+      }
+
+      /* MAIN */
+      .main-wrap {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        margin-left: var(--sw);
+        height: 100vh;
+        overflow: hidden;
+        transition: margin-left 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+      }
+      .main-wrap.expanded {
+        margin-left: 0;
+      }
+
+      /* TOPBAR */
+      .topbar {
+        height: var(--hh);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+        gap: 10px;
+        background: rgba(8, 15, 26, 0.9);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .topbar-l {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .topbar-r {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .hbg {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 13px;
+        transition: all 0.2s;
+        flex-shrink: 0;
+      }
+      .hbg:hover {
+        color: var(--cyan);
+        border-color: var(--cyan);
+      }
+      .sb-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0 12px;
+        height: 32px;
+        cursor: pointer;
+      }
+      .sb-box input {
+        background: none;
+        border: none;
+        outline: none;
+        color: var(--text);
+        font-size: 12px;
+        font-family: inherit;
+        width: 160px;
+        cursor: pointer;
+      }
+      .sb-box input::placeholder {
+        color: var(--muted);
+      }
+      .sb-box i {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .ico-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 12px;
+        transition: all 0.2s;
+        position: relative;
+        flex-shrink: 0;
+      }
+      .ico-btn:hover {
+        color: var(--cyan);
+        border-color: var(--cyan);
+      }
+      .ndot {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        width: 8px;
+        height: 8px;
+        background: #ef4444;
+        border-radius: 50%;
+        border: 2px solid var(--bg);
+        animation: ndotAnim 2s ease-in-out infinite;
+      }
+      @keyframes ndotAnim {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 4px rgba(239, 68, 68, 0);
+        }
+      }
+      .clk-box {
+        text-align: right;
+      }
+      .clk-time {
+        font-family: "Space Mono", monospace;
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .clk-date {
+        font-size: 9px;
+        color: var(--muted);
+        font-weight: 600;
+        margin-top: 1px;
+        text-transform: uppercase;
+      }
+      .online-pill {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 9px;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 99px;
+        white-space: nowrap;
+      }
+      .ondot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #10b981;
+        animation: onAnim 2s ease-in-out infinite;
+      }
+      @keyframes onAnim {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 4px rgba(16, 185, 129, 0);
+        }
+      }
+
+      /* MARQUEE */
+      .mq-bar {
+        overflow: hidden;
+        padding: 5px 18px;
+        background: rgba(6, 182, 212, 0.05);
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .mq-inner {
+        display: inline-block;
+        white-space: nowrap;
+        padding-left: 100%;
+        animation: mqAnim 28s linear infinite;
+      }
+      @keyframes mqAnim {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-100%);
+        }
+      }
+
+      /* PAGES */
+      .page {
+        display: none;
+        flex: 1;
+        overflow-y: auto;
+        padding: 18px;
+      }
+      .page.active {
+        display: block;
+      }
+
+      /* CARD */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+        transition: all 0.25s ease;
+      }
+      .card:hover {
+        border-color: rgba(6, 182, 212, 0.35);
+        box-shadow: 0 8px 32px rgba(6, 182, 212, 0.08);
+      }
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        padding: 15px;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+      }
+
+      /* BADGE */
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 99px;
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .bg {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+      .by {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+      .br {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+      .bb {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+      .bc {
+        background: rgba(6, 182, 212, 0.15);
+        color: #06b6d4;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+      }
+      .bp {
+        background: rgba(139, 92, 246, 0.15);
+        color: #8b5cf6;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+      }
+
+      /* GRADIENT TEXT */
+      .grad {
+        background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-size: 200%;
+        animation: gA 5s ease infinite;
+      }
+      @keyframes gA {
+        0%,
+        100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+      }
+
+      /* PROG */
+      .prog {
+        height: 4px;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+        margin-top: 8px;
+      }
+      .prog-f {
+        height: 100%;
+        border-radius: 99px;
+        transition: width 1.3s cubic-bezier(0.23, 1, 0.32, 1);
+        width: 0;
+      }
+
+      /* TABLE */
+      .tbl {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .tbl thead th {
+        padding: 9px 13px;
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #475569;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+      }
+      .tbl tbody td {
+        padding: 9px 13px;
+        font-size: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .tbl tbody tr:last-child td {
+        border-bottom: none;
+      }
+      .tbl tbody tr:hover td {
+        background: rgba(6, 182, 212, 0.04);
+      }
+
+      /* TABS */
+      .tab-g {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+      .tab-b {
+        padding: 5px 13px;
+        border-radius: 9px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: var(--muted);
+        border: 1px solid transparent;
+        background: none;
+      }
+      .tab-b.active {
+        background: rgba(6, 182, 212, 0.12);
+        color: #06b6d4;
+        border-color: rgba(6, 182, 212, 0.3);
+      }
+      .tab-b:hover:not(.active) {
+        color: #94a3b8;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      /* LIVE FEED */
+      .feed-card {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 9px 10px;
+        background: rgba(255, 255, 255, 0.025);
+        border: 1px solid rgba(6, 182, 212, 0.1);
+        border-radius: 11px;
+        animation: sIn 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+      }
+      @keyframes sIn {
+        from {
+          opacity: 0;
+          transform: translateX(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      .f-av {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        position: relative;
+      }
+      .f-dot {
+        position: absolute;
+        bottom: -1px;
+        right: -1px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        border: 2px solid var(--bg);
+      }
+
+      /* NOTIF PANEL */
+      .np {
+        position: fixed;
+        top: var(--hh);
+        right: 14px;
+        width: 300px;
+        max-height: 400px;
+        background: rgba(10, 16, 28, 0.97);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        z-index: 300;
+        display: none;
+        flex-direction: column;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+      }
+      .np.show {
+        display: flex;
+      }
+      .ni {
+        display: flex;
+        gap: 9px;
+        padding: 11px 13px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        transition: background 0.2s;
+        cursor: pointer;
+      }
+      .ni:last-child {
+        border-bottom: none;
+      }
+      .ni:hover {
+        background: rgba(6, 182, 212, 0.05);
+      }
+      .ni-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+
+      /* SEARCH MODAL */
+      .sm {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 400;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(6px);
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 70px;
+      }
+      .sm.show {
+        display: flex;
+      }
+      .sm-box {
+        background: rgba(10, 16, 28, 0.98);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 520px;
+        overflow: hidden;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+      }
+      .sm-inp {
+        width: 100%;
+        background: none;
+        border: none;
+        outline: none;
+        color: var(--text);
+        font-size: 15px;
+        font-family: inherit;
+        font-weight: 600;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--border);
+      }
+      .sr {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 9px 18px;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .sr:hover {
+        background: rgba(6, 182, 212, 0.06);
+      }
+      .sr-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+
+      /* FORMS */
+      .finp {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 12px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 12px;
+        outline: none;
+      }
+      .finp:focus {
+        border-color: rgba(6, 182, 212, 0.5);
+      }
+      .fsel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 6px 10px;
+        border-radius: 10px;
+        outline: none;
+        cursor: pointer;
+      }
+      .fsel option {
+        background: #0f172a;
+      }
+      .btn-p {
+        padding: 7px 15px;
+        background: linear-gradient(135deg, #06b6d4, #3b82f6);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: opacity 0.2s;
+      }
+      .btn-p:hover {
+        opacity: 0.85;
+      }
+      label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      /* SCROLLBAR */
+      ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(6, 182, 212, 0.35);
+        border-radius: 99px;
+      }
+
+      /* RESPONSIVE */
+      @media (max-width: 900px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+        .sidebar.open {
+          transform: translateX(0);
+        }
+        .main-wrap {
+          margin-left: 0 !important;
+        }
+        .sb-box {
+          display: none !important;
+        }
+      }
+      @media (max-width: 600px) {
+        .page {
+          padding: 12px;
+        }
+        .clk-box {
+          display: none;
+        }
+        .topbar {
+          padding: 0 12px;
+          gap: 7px;
+        }
+        .online-pill .on-txt {
+          display: none;
+        }
+      }
+      @media (max-width: 700px) {
+        #chart-row {
+          grid-template-columns: 1fr !important;
+        }
+        #main-grid {
+          grid-template-columns: 1fr !important;
+        }
+      }
+
+      /* STAGGER */
+      .s1 {
+        animation: fU 0.5s 0.05s both;
+      }
+      .s2 {
+        animation: fU 0.5s 0.1s both;
+      }
+      .s3 {
+        animation: fU 0.5s 0.15s both;
+      }
+      .s4 {
+        animation: fU 0.5s 0.2s both;
+      }
+      .s5 {
+        animation: fU 0.5s 0.25s both;
+      }
+      .s6 {
+        animation: fU 0.5s 0.3s both;
+      }
+      @keyframes fU {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="overlay" id="overlay" onclick="closeSb()"></div>
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sb-header">
+          <div class="sb-logo">
+            <img
+              src="/assets/cropped-SMK-T.png"
+              alt="Logo SMK Syubbanul Wathon"
+            />
+          </div>
+          <div class="sb-title">
+            SMK Syubbanul Wathon<small>Sistem Presensi</small>
+          </div>
+        </div>
+        <nav>
+          <div class="nav-sec">Menu Utama</div>
+          <button class="nav-item active" onclick="goPage('dashboard', this)">
+            <i class="fas fa-th-large"></i>Dashboard
+          </button>
+          <button class="nav-item" onclick="goPage('siswa', this)">
+            <i class="fas fa-user-graduate"></i>Data Siswa<span
+              class="nav-badge"
+              >3</span
+            >
+          </button>
+          <button class="nav-item" onclick="goPage('guru', this)">
+            <i class="fas fa-chalkboard-teacher"></i>Guru & Staff
+          </button>
+          <button class="nav-item" onclick="goPage('jadwal', this)">
+            <i class="fas fa-calendar-alt"></i>Jadwal
+          </button>
+          <div class="nav-sec">Laporan</div>
+          <button class="nav-item" onclick="goPage('laporan', this)">
+            <i class="fas fa-chart-bar"></i>Rekap Presensi
+          </button>
+          <button class="nav-item" onclick="goPage('rfid', this)">
+            <i class="fas fa-id-card"></i>RFID Manager
+          </button>
+          <div class="nav-sec">Sistem</div>
+          <button class="nav-item" onclick="goPage('sett', this)">
+            <i class="fas fa-cog"></i>Pengaturan
+          </button>
+        </nav>
+        <div class="sb-footer">
+          <div class="user-chip">
+            <img
+              class="user-av"
+              src="https://i.pravatar.cc/64?u=admin99"
+              alt="Admin"
+            />
+            <div>
+              <div style="font-size: 12px; font-weight: 700">Admin Sekolah</div>
+              <div
+                style="
+                  font-size: 9px;
+                  color: var(--muted);
+                  font-weight: 600;
+                  text-transform: uppercase;
+                "
+              >
+                Super Admin
+              </div>
+            </div>
+            <i
+              class="fas fa-ellipsis-v"
+              style="font-size: 10px; color: var(--muted); margin-left: auto"
+            ></i>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <div class="main-wrap" id="mw">
+        <!-- TOPBAR -->
+        <header class="topbar" id="topbar" style="position: sticky; top: 0">
+          <div class="topbar-l">
+            <div class="hbg" onclick="toggleSb()">
+              <i class="fas fa-bars"></i>
+            </div>
+            <div class="sb-box" onclick="openSM()">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Cari siswa, guru..." readonly />
+            </div>
+          </div>
+          <div class="topbar-r">
+            <div
+              class="ico-btn"
+              id="mSrch"
+              onclick="openSM()"
+              style="display: none"
+            >
+              <i class="fas fa-search"></i>
+            </div>
+            <div class="ico-btn" id="nBtn" onclick="toggleN()">
+              <i class="fas fa-bell"></i>
+              <div class="ndot" id="ndot"></div>
+            </div>
+            <div class="clk-box">
+              <div class="clk-time" id="jam">--:--:--</div>
+              <div class="clk-date" id="tgl">...</div>
+            </div>
+            <div class="online-pill">
+              <div class="ondot"></div>
+              <span
+                class="on-txt"
+                style="
+                  font-size: 9px;
+                  font-weight: 800;
+                  color: #10b981;
+                  text-transform: uppercase;
+                  letter-spacing: 0.05em;
+                "
+                >Online</span
+              >
+            </div>
+          </div>
+        </header>
+
+        <!-- MARQUEE -->
+        <div class="mq-bar">
+          <span
+            class="mq-inner"
+            style="
+              font-size: 10px;
+              font-weight: 700;
+              color: #06b6d4;
+              text-transform: uppercase;
+              letter-spacing: 0.06em;
+            "
+          >
+            <i class="fas fa-bullhorn" style="margin-right: 8px"></i>
+            Informasikan kehadiran tepat waktu untuk menghindari akumulasi poin
+            kedisiplinan &nbsp;•&nbsp; Gunakan kartu RFID dengan benar dan jaga
+            kondisinya &nbsp;•&nbsp; SMK BISA, SMK HEBAT! Prestasi dimulai dari
+            kedisiplinan &nbsp;•&nbsp; Sistem presensi digital aktif 24/7 —
+            Semester Genap 2024/2025 &nbsp;•&nbsp;
+          </span>
+        </div>
+
+        <!-- ========== DASHBOARD ========== -->
+        <div class="page active" id="page-dashboard">
+          <!-- KPI -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+              gap: 12px;
+              margin-bottom: 18px;
+            "
+          >
+            <div class="stat-card s1">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                  margin-bottom: 8px;
+                "
+              >
+                <div>
+                  <div
+                    style="
+                      font-size: 9px;
+                      font-weight: 800;
+                      text-transform: uppercase;
+                      letter-spacing: 0.08em;
+                      color: var(--muted);
+                      margin-bottom: 3px;
+                    "
+                  >
+                    Siswa Hadir
+                  </div>
+                  <div
+                    style="font-size: 26px; font-weight: 900; line-height: 1"
+                  >
+                    1,120
+                  </div>
+                </div>
+                <div
+                  style="
+                    padding: 9px;
+                    border-radius: 11px;
+                    background: rgba(6, 182, 212, 0.12);
+                  "
+                >
+                  <i
+                    class="fas fa-user-graduate"
+                    style="color: #06b6d4; font-size: 15px"
+                  ></i>
+                </div>
+              </div>
+              <div class="prog">
+                <div
+                  class="prog-f"
+                  style="background: linear-gradient(90deg, #06b6d4, #3b82f6)"
+                  data-w="92%"
+                ></div>
+              </div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: var(--muted);
+                  margin-top: 5px;
+                  font-weight: 600;
+                "
+              >
+                92% dari 1,217 siswa
+              </div>
+            </div>
+            <div class="stat-card s2">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                  margin-bottom: 8px;
+                "
+              >
+                <div>
+                  <div
+                    style="
+                      font-size: 9px;
+                      font-weight: 800;
+                      text-transform: uppercase;
+                      letter-spacing: 0.08em;
+                      color: var(--muted);
+                      margin-bottom: 3px;
+                    "
+                  >
+                    Guru & Staff
+                  </div>
+                  <div
+                    style="font-size: 26px; font-weight: 900; line-height: 1"
+                  >
+                    58
+                  </div>
+                </div>
+                <div
+                  style="
+                    padding: 9px;
+                    border-radius: 11px;
+                    background: rgba(139, 92, 246, 0.12);
+                  "
+                >
+                  <i
+                    class="fas fa-chalkboard-teacher"
+                    style="color: #8b5cf6; font-size: 15px"
+                  ></i>
+                </div>
+              </div>
+              <div class="prog">
+                <div
+                  class="prog-f"
+                  style="background: linear-gradient(90deg, #8b5cf6, #ec4899)"
+                  data-w="90%"
+                ></div>
+              </div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: var(--muted);
+                  margin-top: 5px;
+                  font-weight: 600;
+                "
+              >
+                90% dari 64 tenaga pendidik
+              </div>
+            </div>
+            <div class="stat-card s3">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                  margin-bottom: 8px;
+                "
+              >
+                <div>
+                  <div
+                    style="
+                      font-size: 9px;
+                      font-weight: 800;
+                      text-transform: uppercase;
+                      letter-spacing: 0.08em;
+                      color: var(--muted);
+                      margin-bottom: 3px;
+                    "
+                  >
+                    Izin Hari Ini
+                  </div>
+                  <div
+                    style="font-size: 26px; font-weight: 900; line-height: 1"
+                  >
+                    16
+                  </div>
+                </div>
+                <div
+                  style="
+                    padding: 9px;
+                    border-radius: 11px;
+                    background: rgba(245, 158, 11, 0.12);
+                  "
+                >
+                  <i
+                    class="fas fa-file-alt"
+                    style="color: #f59e0b; font-size: 15px"
+                  ></i>
+                </div>
+              </div>
+              <div class="prog">
+                <div
+                  class="prog-f"
+                  style="background: linear-gradient(90deg, #f59e0b, #f97316)"
+                  data-w="13%"
+                ></div>
+              </div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: var(--muted);
+                  margin-top: 5px;
+                  font-weight: 600;
+                "
+              >
+                14 siswa · 2 guru/staff
+              </div>
+            </div>
+            <div class="stat-card s4">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                  margin-bottom: 8px;
+                "
+              >
+                <div>
+                  <div
+                    style="
+                      font-size: 9px;
+                      font-weight: 800;
+                      text-transform: uppercase;
+                      letter-spacing: 0.08em;
+                      color: var(--muted);
+                      margin-bottom: 3px;
+                    "
+                  >
+                    Alpha
+                  </div>
+                  <div
+                    style="
+                      font-size: 26px;
+                      font-weight: 900;
+                      line-height: 1;
+                      color: #ef4444;
+                    "
+                  >
+                    3
+                  </div>
+                </div>
+                <div
+                  style="
+                    padding: 9px;
+                    border-radius: 11px;
+                    background: rgba(239, 68, 68, 0.12);
+                  "
+                >
+                  <i
+                    class="fas fa-exclamation-triangle"
+                    style="color: #ef4444; font-size: 15px"
+                  ></i>
+                </div>
+              </div>
+              <div class="prog">
+                <div
+                  class="prog-f"
+                  style="background: linear-gradient(90deg, #ef4444, #dc2626)"
+                  data-w="2%"
+                ></div>
+              </div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: var(--muted);
+                  margin-top: 5px;
+                  font-weight: 600;
+                "
+              >
+                Perlu tindak lanjut segera
+              </div>
+            </div>
+          </div>
+
+          <!-- Main grid -->
+          <div
+            id="main-grid"
+            style="display: grid; grid-template-columns: 1fr 330px; gap: 14px"
+          >
+            <!-- Left -->
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+                min-width: 0;
+              "
+            >
+              <!-- Chart row -->
+              <div
+                id="chart-row"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px"
+              >
+                <div class="card s3" style="padding: 14px">
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: flex-start;
+                      margin-bottom: 10px;
+                    "
+                  >
+                    <div>
+                      <div
+                        style="
+                          font-size: 9px;
+                          font-weight: 800;
+                          text-transform: uppercase;
+                          color: var(--muted);
+                        "
+                      >
+                        Tren Mingguan
+                      </div>
+                      <div
+                        style="
+                          font-size: 13px;
+                          font-weight: 800;
+                          margin-top: 2px;
+                        "
+                      >
+                        Kehadiran Siswa
+                      </div>
+                    </div>
+                    <span class="badge bc">7 hari</span>
+                  </div>
+                  <div style="height: 140px; position: relative">
+                    <canvas id="weeklyChart"></canvas>
+                  </div>
+                </div>
+                <div class="card s4" style="padding: 14px">
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: flex-start;
+                      margin-bottom: 10px;
+                    "
+                  >
+                    <div>
+                      <div
+                        style="
+                          font-size: 9px;
+                          font-weight: 800;
+                          text-transform: uppercase;
+                          color: var(--muted);
+                        "
+                      >
+                        Status Hari Ini
+                      </div>
+                      <div
+                        style="
+                          font-size: 13px;
+                          font-weight: 800;
+                          margin-top: 2px;
+                        "
+                      >
+                        Distribusi
+                      </div>
+                    </div>
+                    <span class="badge bb">Live</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 10px">
+                    <div
+                      style="
+                        position: relative;
+                        width: 110px;
+                        height: 110px;
+                        flex-shrink: 0;
+                      "
+                    >
+                      <canvas id="donutChart" width="110" height="110"></canvas>
+                      <div
+                        style="
+                          position: absolute;
+                          inset: 0;
+                          display: flex;
+                          flex-direction: column;
+                          align-items: center;
+                          justify-content: center;
+                          pointer-events: none;
+                        "
+                      >
+                        <div style="font-size: 18px; font-weight: 900">92%</div>
+                        <div
+                          style="
+                            font-size: 8px;
+                            color: var(--muted);
+                            font-weight: 700;
+                            text-transform: uppercase;
+                          "
+                        >
+                          Hadir
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style="
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                      "
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          font-size: 11px;
+                        "
+                      >
+                        <span
+                          style="display: flex; align-items: center; gap: 5px"
+                          ><span
+                            style="
+                              width: 7px;
+                              height: 7px;
+                              border-radius: 2px;
+                              background: #06b6d4;
+                              display: inline-block;
+                            "
+                          ></span
+                          >Hadir</span
+                        ><strong>1,120</strong>
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          font-size: 11px;
+                        "
+                      >
+                        <span
+                          style="display: flex; align-items: center; gap: 5px"
+                          ><span
+                            style="
+                              width: 7px;
+                              height: 7px;
+                              border-radius: 2px;
+                              background: #f59e0b;
+                              display: inline-block;
+                            "
+                          ></span
+                          >Izin</span
+                        ><strong>14</strong>
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          font-size: 11px;
+                        "
+                      >
+                        <span
+                          style="display: flex; align-items: center; gap: 5px"
+                          ><span
+                            style="
+                              width: 7px;
+                              height: 7px;
+                              border-radius: 2px;
+                              background: #8b5cf6;
+                              display: inline-block;
+                            "
+                          ></span
+                          >Sakit</span
+                        ><strong>80</strong>
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          font-size: 11px;
+                        "
+                      >
+                        <span
+                          style="display: flex; align-items: center; gap: 5px"
+                          ><span
+                            style="
+                              width: 7px;
+                              height: 7px;
+                              border-radius: 2px;
+                              background: #ef4444;
+                              display: inline-block;
+                            "
+                          ></span
+                          >Alpa</span
+                        ><strong style="color: #ef4444">3</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Session Table -->
+              <div class="card s5" style="overflow: hidden">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 12px 14px;
+                    border-bottom: 1px solid var(--border);
+                  "
+                >
+                  <div style="display: flex; align-items: center; gap: 7px">
+                    <i
+                      class="fas fa-clock"
+                      style="color: #06b6d4; font-size: 12px"
+                    ></i
+                    ><span
+                      style="
+                        font-size: 11px;
+                        font-weight: 800;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                      "
+                      >Monitoring Sesi Mengajar</span
+                    >
+                  </div>
+                  <div style="display: flex; gap: 5px; align-items: center">
+                    <span class="badge bg">Aktif</span
+                    ><span
+                      style="
+                        font-size: 9px;
+                        color: var(--muted);
+                        font-weight: 600;
+                      "
+                      >Senin 07:00–13:30</span
+                    >
+                  </div>
+                </div>
+                <div style="overflow-x: auto">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th>Jam</th>
+                        <th>Mata Pelajaran</th>
+                        <th>Guru</th>
+                        <th>Ruang</th>
+                        <th>Kelas</th>
+                        <th style="text-align: center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <span
+                            style="
+                              font-family: &quot;Space Mono&quot;, monospace;
+                              color: #06b6d4;
+                              font-weight: 700;
+                              font-size: 11px;
+                            "
+                            >07:00</span
+                          >
+                        </td>
+                        <td style="font-weight: 700; color: #e2e8f0">
+                          Pemrograman Web
+                        </td>
+                        <td style="color: #94a3b8">Ust. Djayus, M.Kom</td>
+                        <td style="color: #64748b">Lab RPL 1</td>
+                        <td style="color: #64748b">XII RPL 1</td>
+                        <td style="text-align: center">
+                          <span class="badge bg">Masuk</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <span
+                            style="
+                              font-family: &quot;Space Mono&quot;, monospace;
+                              color: #06b6d4;
+                              font-weight: 700;
+                              font-size: 11px;
+                            "
+                            >07:00</span
+                          >
+                        </td>
+                        <td style="font-weight: 700; color: #e2e8f0">
+                          Bahasa Inggris
+                        </td>
+                        <td style="color: #94a3b8">Ustzh. Sarah, M.Pd</td>
+                        <td style="color: #64748b">Kelas XI-A</td>
+                        <td style="color: #64748b">XI TKJ 2</td>
+                        <td style="text-align: center">
+                          <span class="badge by">Belum</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <span
+                            style="
+                              font-family: &quot;Space Mono&quot;, monospace;
+                              color: #06b6d4;
+                              font-weight: 700;
+                              font-size: 11px;
+                            "
+                            >08:30</span
+                          >
+                        </td>
+                        <td style="font-weight: 700; color: #e2e8f0">
+                          Matematika
+                        </td>
+                        <td style="color: #94a3b8">Ust. Mahfud, M.T</td>
+                        <td style="color: #64748b">Kelas XII-B</td>
+                        <td style="color: #64748b">XII TKJ 1</td>
+                        <td style="text-align: center">
+                          <span class="badge bg">Masuk</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <span
+                            style="
+                              font-family: &quot;Space Mono&quot;, monospace;
+                              color: #06b6d4;
+                              font-weight: 700;
+                              font-size: 11px;
+                            "
+                            >08:30</span
+                          >
+                        </td>
+                        <td style="font-weight: 700; color: #e2e8f0">
+                          Desain Grafis
+                        </td>
+                        <td style="color: #94a3b8">Ustzh. Maria, S.Pd</td>
+                        <td style="color: #64748b">Lab MM 1</td>
+                        <td style="color: #64748b">X MM 1</td>
+                        <td style="text-align: center">
+                          <span class="badge bg">Masuk</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <span
+                            style="
+                              font-family: &quot;Space Mono&quot;, monospace;
+                              color: #06b6d4;
+                              font-weight: 700;
+                              font-size: 11px;
+                            "
+                            >10:00</span
+                          >
+                        </td>
+                        <td style="font-weight: 700; color: #e2e8f0">
+                          Fisika Terapan
+                        </td>
+                        <td style="color: #94a3b8">Ust. Solihin, S.T</td>
+                        <td style="color: #64748b">Kelas XI-C</td>
+                        <td style="color: #64748b">XI RPL 3</td>
+                        <td style="text-align: center">
+                          <span class="badge bb">Mendatang</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Video -->
+              <div
+                class="card s6"
+                style="overflow: hidden; position: relative; aspect-ratio: 16/9"
+              >
+                <iframe
+                  style="width: 100%; height: 100%; display: block"
+                  src="https://www.youtube.com/embed/JDL7VaJcZzU?autoplay=1&mute=1&loop=1&playlist=JDL7VaJcZzU&controls=0"
+                  frameborder="0"
+                  allowfullscreen
+                ></iframe>
+                <div
+                  style="
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    padding: 10px 14px;
+                    background: linear-gradient(
+                      to top,
+                      rgba(0, 0, 0, 0.75),
+                      transparent
+                    );
+                    display: flex;
+                    align-items: center;
+                    gap: 7px;
+                  "
+                >
+                  <span class="badge br">▶ Live</span
+                  ><span style="font-size: 11px; font-weight: 600; color: #fff"
+                    >Profil SMK Syubbanul Wathon</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT FEED -->
+            <div class="s2" style="display: flex; flex-direction: column">
+              <div
+                class="card"
+                style="
+                  flex: 1;
+                  display: flex;
+                  flex-direction: column;
+                  overflow: hidden;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    gap: 5px;
+                    padding: 10px;
+                    border-bottom: 1px solid var(--border);
+                    align-items: center;
+                  "
+                >
+                  <div class="tab-g">
+                    <button
+                      class="tab-b active"
+                      id="tab-siswa"
+                      onclick="switchTab('siswa')"
+                    >
+                      <i
+                        class="fas fa-user-graduate"
+                        style="margin-right: 4px"
+                      ></i
+                      >Siswa
+                    </button>
+                    <button
+                      class="tab-b"
+                      id="tab-guru"
+                      onclick="switchTab('guru')"
+                    >
+                      <i class="fas fa-user-tie" style="margin-right: 4px"></i
+                      >Guru
+                    </button>
+                  </div>
+                  <div
+                    style="
+                      margin-left: auto;
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 6px;
+                        height: 6px;
+                        border-radius: 50%;
+                        background: #ef4444;
+                        animation: ndotAnim 2s infinite;
+                      "
+                    ></div>
+                    <span
+                      style="
+                        font-size: 8px;
+                        font-weight: 900;
+                        color: #ef4444;
+                        text-transform: uppercase;
+                      "
+                      >Live</span
+                    >
+                  </div>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    gap: 5px;
+                    padding: 8px 10px;
+                    border-bottom: 1px solid var(--border);
+                    flex-wrap: wrap;
+                  "
+                >
+                  <span class="badge bg"
+                    ><i class="fas fa-check" style="margin-right: 2px"></i
+                    ><span id="cnt-h">0</span> Hadir</span
+                  >
+                  <span class="badge by"
+                    ><i class="fas fa-file" style="margin-right: 2px"></i
+                    ><span id="cnt-i">0</span> Izin</span
+                  >
+                  <span class="badge br"
+                    ><i class="fas fa-times" style="margin-right: 2px"></i
+                    ><span id="cnt-a">0</span> Alpa</span
+                  >
+                </div>
+                <div
+                  id="presensi-container"
+                  style="
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                  "
+                ></div>
+                <div
+                  style="
+                    padding: 7px;
+                    text-align: center;
+                    border-top: 1px solid var(--border);
+                  "
+                >
+                  <span style="font-size: 9px; color: #334155; font-weight: 600"
+                    >Auto-refresh · 20 log terakhir</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== SISWA ========== -->
+        <div class="page" id="page-siswa">
+          <div style="margin-bottom: 16px">
+            <div style="font-size: 20px; font-weight: 900" class="grad">
+              Data Siswa
+            </div>
+            <div style="font-size: 12px; color: var(--muted)">
+              Monitoring kehadiran seluruh siswa
+            </div>
+          </div>
+          <div class="card" style="padding: 14px; margin-bottom: 12px">
+            <div
+              style="
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                align-items: center;
+              "
+            >
+              <div class="sb-box" style="display: flex !important">
+                <i class="fas fa-search"></i
+                ><input
+                  type="text"
+                  placeholder="Cari nama siswa..."
+                  id="siswaQ"
+                  oninput="filterSiswa()"
+                  style="
+                    background: none;
+                    border: none;
+                    outline: none;
+                    color: var(--text);
+                    font-size: 12px;
+                    font-family: inherit;
+                    width: 180px;
+                  "
+                />
+              </div>
+              <select class="fsel" id="fKelas" onchange="filterSiswa()">
+                <option value="">Semua Kelas</option>
+                <option>X RPL 1</option>
+                <option>X RPL 2</option>
+                <option>X TKJ 1</option>
+                <option>X MM 1</option>
+                <option>XI RPL 1</option>
+                <option>XI RPL 3</option>
+                <option>XI TKJ 2</option>
+                <option>XII RPL 1</option>
+                <option>XII RPL 2</option>
+                <option>XII TKJ 1</option>
+                <option>XII TKJ 3</option>
+                <option>XII MM 2</option>
+              </select>
+              <select class="fsel" id="fStatus" onchange="filterSiswa()">
+                <option value="">Semua Status</option>
+                <option>Hadir</option>
+                <option>Izin</option>
+                <option>Sakit</option>
+                <option>Alpa</option>
+              </select>
+              <button class="btn-p" onclick="exportCSV()">
+                <i class="fas fa-download" style="margin-right: 5px"></i>Export
+                CSV
+              </button>
+              <span
+                style="margin-left: auto; font-size: 11px; color: var(--muted)"
+                ><span id="sw-count">0</span> siswa ditemukan</span
+              >
+            </div>
+          </div>
+          <div class="card" style="overflow: hidden">
+            <div style="overflow-x: auto">
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Nama Siswa</th>
+                    <th>Kelas</th>
+                    <th>NIS</th>
+                    <th>Jam Masuk</th>
+                    <th style="text-align: center">Status</th>
+                    <th>Keterangan</th>
+                  </tr>
+                </thead>
+                <tbody id="sw-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== GURU ========== -->
+        <div class="page" id="page-guru">
+          <div style="margin-bottom: 16px">
+            <div style="font-size: 20px; font-weight: 900" class="grad">
+              Guru & Staff
+            </div>
+            <div style="font-size: 12px; color: var(--muted)">
+              Monitoring kehadiran tenaga pendidik
+            </div>
+          </div>
+          <div class="card" style="overflow: hidden">
+            <div style="overflow-x: auto">
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Nama</th>
+                    <th>Jabatan</th>
+                    <th>NIP</th>
+                    <th>Jam Masuk</th>
+                    <th style="text-align: center">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="gr-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== JADWAL ========== -->
+        <div class="page" id="page-jadwal">
+          <div style="margin-bottom: 16px">
+            <div style="font-size: 20px; font-weight: 900" class="grad">
+              Jadwal Pelajaran
+            </div>
+            <div style="font-size: 12px; color: var(--muted)">
+              Semester Genap 2024/2025
+            </div>
+          </div>
+          <div class="card" style="padding: 12px; margin-bottom: 12px">
+            <div class="tab-g" id="hari-tabs">
+              <button
+                class="tab-b active"
+                onclick="filterJadwal('Senin', this)"
+              >
+                Senin
+              </button>
+              <button class="tab-b" onclick="filterJadwal('Selasa', this)">
+                Selasa
+              </button>
+              <button class="tab-b" onclick="filterJadwal('Rabu', this)">
+                Rabu
+              </button>
+              <button class="tab-b" onclick="filterJadwal('Kamis', this)">
+                Kamis
+              </button>
+              <button class="tab-b" onclick="filterJadwal('Jumat', this)">
+                Jumat
+              </button>
+              <button class="tab-b" onclick="filterJadwal('Sabtu', this)">
+                Sabtu
+              </button>
+            </div>
+          </div>
+          <div class="card" style="overflow: hidden">
+            <div style="overflow-x: auto">
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th>Jam</th>
+                    <th>Mapel</th>
+                    <th>Guru</th>
+                    <th>Kelas</th>
+                    <th>Ruang</th>
+                  </tr>
+                </thead>
+                <tbody id="jd-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== LAPORAN ========== -->
+        <div class="page" id="page-laporan">
+          <div style="margin-bottom: 16px">
+            <div style="font-size: 20px; font-weight: 900" class="grad">
+              Rekap Presensi
+            </div>
+            <div style="font-size: 12px; color: var(--muted)">
+              Laporan kehadiran bulanan
+            </div>
+          </div>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+              gap: 12px;
+              margin-bottom: 16px;
+            "
+          >
+            <div class="stat-card">
+              <div
+                style="
+                  font-size: 9px;
+                  font-weight: 800;
+                  text-transform: uppercase;
+                  color: var(--muted);
+                  margin-bottom: 8px;
+                "
+              >
+                Tingkat Kehadiran Bulan Ini
+              </div>
+              <div style="font-size: 32px; font-weight: 900" class="grad">
+                91.4%
+              </div>
+              <div class="prog">
+                <div
+                  class="prog-f"
+                  style="background: linear-gradient(90deg, #06b6d4, #3b82f6)"
+                  data-w="91.4%"
+                ></div>
+              </div>
+              <div
+                style="font-size: 10px; color: var(--muted); margin-top: 5px"
+              >
+                Target: 95% · Selisih: -3.6%
+              </div>
+            </div>
+            <div class="stat-card">
+              <div
+                style="
+                  font-size: 9px;
+                  font-weight: 800;
+                  text-transform: uppercase;
+                  color: var(--muted);
+                  margin-bottom: 8px;
+                "
+              >
+                Total Hari Efektif
+              </div>
+              <div style="font-size: 32px; font-weight: 900">
+                18
+                <span style="font-size: 13px; color: var(--muted)">hari</span>
+              </div>
+              <div
+                style="font-size: 10px; color: var(--muted); margin-top: 14px"
+              >
+                Dari 22 hari kerja Januari 2025
+              </div>
+            </div>
+            <div class="stat-card">
+              <div
+                style="
+                  font-size: 9px;
+                  font-weight: 800;
+                  text-transform: uppercase;
+                  color: var(--muted);
+                  margin-bottom: 8px;
+                "
+              >
+                Alpa Terbanyak
+              </div>
+              <div style="font-size: 32px; font-weight: 900; color: #ef4444">
+                5x
+              </div>
+              <div
+                style="font-size: 10px; color: var(--muted); margin-top: 14px"
+              >
+                Perlu panggilan orang tua
+              </div>
+            </div>
+          </div>
+          <div class="card" style="padding: 14px">
+            <div
+              style="
+                font-size: 11px;
+                font-weight: 800;
+                text-transform: uppercase;
+                margin-bottom: 12px;
+              "
+            >
+              Grafik Kehadiran 4 Minggu Terakhir
+            </div>
+            <div style="height: 190px; position: relative">
+              <canvas id="laporanChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== RFID ========== -->
+        <div class="page" id="page-rfid">
+          <div style="margin-bottom: 16px">
+            <div style="font-size: 20px; font-weight: 900" class="grad">
+              RFID Manager
+            </div>
+            <div style="font-size: 12px; color: var(--muted)">
+              Manajemen kartu RFID
+            </div>
+          </div>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 12px;
+              margin-bottom: 16px;
+            "
+          >
+            <div class="stat-card">
+              <div
+                style="
+                  font-size: 9px;
+                  font-weight: 800;
+                  text-transform: uppercase;
+                  color: var(--muted);
+                "
+              >
+                Terdaftar
+              </div>
+              <div style="font-size: 26px; font-weight: 900; margin-top: 4px">
+                1,281
+              </div>
+            </div>
+            <div class="stat-card">
+              <div
+                style="
+                  font-size: 9px;
+                  font-weight: 800;
+                  text-transform: uppercase;
+                  color: var(--muted);
+                "
+              >
+                Aktif
+              </div>
+              <div
+                style="
+                  font-size: 26px;
+                  font-weight: 900;
+                  margin-top: 4px;
+                  color: #10b981;
+                "
+              >
+                1,265
+              </div>
+            </div>
+            <div class="stat-card">
+              <div
+                style="
+                  font-size: 9px;
+                  font-weight: 800;
+                  text-transform: uppercase;
+                  color: var(--muted);
+                "
+              >
+                Hilang/Rusak
+              </div>
+              <div
+                style="
+                  font-size: 26px;
+                  font-weight: 900;
+                  margin-top: 4px;
+                  color: #ef4444;
+                "
+              >
+                16
+              </div>
+            </div>
+            <div class="stat-card">
+              <div
+                style="
+                  font-size: 9px;
+                  font-weight: 800;
+                  text-transform: uppercase;
+                  color: var(--muted);
+                "
+              >
+                Scan Hari Ini
+              </div>
+              <div
+                style="
+                  font-size: 26px;
+                  font-weight: 900;
+                  margin-top: 4px;
+                  color: #06b6d4;
+                "
+              >
+                1,178
+              </div>
+            </div>
+          </div>
+          <div class="card" style="padding: 20px; text-align: center">
+            <div
+              id="rfid-anim"
+              style="
+                font-size: 48px;
+                color: rgba(6, 182, 212, 0.3);
+                margin-bottom: 10px;
+              "
+            >
+              <i class="fas fa-wifi"></i>
+            </div>
+            <div style="font-size: 14px; font-weight: 800; margin-bottom: 6px">
+              Reader RFID Siap
+            </div>
+            <div
+              style="font-size: 12px; color: var(--muted); margin-bottom: 14px"
+            >
+              Tempelkan kartu RFID untuk mendaftarkan atau memverifikasi
+            </div>
+            <button class="btn-p" onclick="simulateRFID()">
+              <i class="fas fa-plus" style="margin-right: 5px"></i>Simulasi Scan
+            </button>
+            <div
+              id="rfid-result"
+              style="margin-top: 12px; font-size: 12px; color: var(--muted)"
+            ></div>
+          </div>
+        </div>
+
+        <!-- ========== PENGATURAN ========== -->
+        <div class="page" id="page-sett">
+          <div style="margin-bottom: 16px">
+            <div style="font-size: 20px; font-weight: 900" class="grad">
+              Pengaturan
+            </div>
+            <div style="font-size: 12px; color: var(--muted)">
+              Konfigurasi sistem presensi
+            </div>
+          </div>
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+              max-width: 580px;
+            "
+          >
+            <div class="card" style="padding: 18px">
+              <div
+                style="
+                  font-size: 11px;
+                  font-weight: 800;
+                  text-transform: uppercase;
+                  letter-spacing: 0.05em;
+                  margin-bottom: 14px;
+                  color: var(--muted);
+                "
+              >
+                Informasi Sekolah
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 10px">
+                <div>
+                  <label>Nama Sekolah</label
+                  ><input class="finp" value="SMK Syubbanul Wathon" />
+                </div>
+                <div>
+                  <label>NPSN</label><input class="finp" value="20365089" />
+                </div>
+                <div>
+                  <label>Tahun Pelajaran</label
+                  ><input class="finp" value="2024/2025" />
+                </div>
+              </div>
+            </div>
+            <div class="card" style="padding: 18px">
+              <div
+                style="
+                  font-size: 11px;
+                  font-weight: 800;
+                  text-transform: uppercase;
+                  letter-spacing: 0.05em;
+                  margin-bottom: 14px;
+                  color: var(--muted);
+                "
+              >
+                Jam & Toleransi
+              </div>
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"
+              >
+                <div>
+                  <label>Jam Masuk</label
+                  ><input class="finp" type="time" value="07:00" />
+                </div>
+                <div>
+                  <label>Toleransi (menit)</label
+                  ><input
+                    class="finp"
+                    type="number"
+                    value="15"
+                    min="0"
+                    max="60"
+                  />
+                </div>
+              </div>
+            </div>
+            <button
+              class="btn-p"
+              style="align-self: flex-start"
+              onclick="saveSett(this)"
+            >
+              <i class="fas fa-save" style="margin-right: 5px"></i>Simpan
+              Pengaturan
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- /main-wrap -->
+    </div>
+    <!-- /app -->
+
+    <!-- NOTIF PANEL -->
+    <div class="np" id="np">
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 14px;
+          border-bottom: 1px solid var(--border);
+        "
+      >
+        <span style="font-size: 12px; font-weight: 800">Notifikasi</span>
+        <span
+          style="
+            font-size: 10px;
+            color: #06b6d4;
+            font-weight: 700;
+            cursor: pointer;
+          "
+          onclick="markRead()"
+          >Tandai dibaca</span
+        >
+      </div>
+      <div style="overflow-y: auto; flex: 1">
+        <div class="ni">
+          <div class="ni-icon" style="background: rgba(239, 68, 68, 0.12)">
+            <i class="fas fa-exclamation-triangle" style="color: #ef4444"></i>
+          </div>
+          <div style="flex: 1; min-width: 0">
+            <div
+              style="
+                font-size: 11px;
+                font-weight: 700;
+                color: #e2e8f0;
+                margin-bottom: 2px;
+              "
+            >
+              3 Siswa Alpha Terdeteksi
+            </div>
+            <div style="font-size: 10px; color: var(--muted)">
+              Rehan Bumi, Dimas P., +1
+            </div>
+          </div>
+          <div
+            style="
+              font-size: 9px;
+              color: #334155;
+              padding-top: 2px;
+              white-space: nowrap;
+            "
+          >
+            07:45
+          </div>
+        </div>
+        <div class="ni">
+          <div class="ni-icon" style="background: rgba(245, 158, 11, 0.12)">
+            <i class="fas fa-clock" style="color: #f59e0b"></i>
+          </div>
+          <div style="flex: 1; min-width: 0">
+            <div
+              style="
+                font-size: 11px;
+                font-weight: 700;
+                color: #e2e8f0;
+                margin-bottom: 2px;
+              "
+            >
+              Ustzh. Sarah Belum Absen
+            </div>
+            <div style="font-size: 10px; color: var(--muted)">
+              Kelas XI-A belum dimulai
+            </div>
+          </div>
+          <div
+            style="
+              font-size: 9px;
+              color: #334155;
+              padding-top: 2px;
+              white-space: nowrap;
+            "
+          >
+            07:15
+          </div>
+        </div>
+        <div class="ni">
+          <div class="ni-icon" style="background: rgba(6, 182, 212, 0.12)">
+            <i class="fas fa-id-card" style="color: #06b6d4"></i>
+          </div>
+          <div style="flex: 1; min-width: 0">
+            <div
+              style="
+                font-size: 11px;
+                font-weight: 700;
+                color: #e2e8f0;
+                margin-bottom: 2px;
+              "
+            >
+              RFID Baru Terdaftar
+            </div>
+            <div style="font-size: 10px; color: var(--muted)">
+              Ahmad Fauzan — XII RPL 1
+            </div>
+          </div>
+          <div
+            style="
+              font-size: 9px;
+              color: #334155;
+              padding-top: 2px;
+              white-space: nowrap;
+            "
+          >
+            06:58
+          </div>
+        </div>
+        <div class="ni">
+          <div class="ni-icon" style="background: rgba(16, 185, 129, 0.12)">
+            <i class="fas fa-check-circle" style="color: #10b981"></i>
+          </div>
+          <div style="flex: 1; min-width: 0">
+            <div
+              style="
+                font-size: 11px;
+                font-weight: 700;
+                color: #e2e8f0;
+                margin-bottom: 2px;
+              "
+            >
+              Backup Data Berhasil
+            </div>
+            <div style="font-size: 10px; color: var(--muted)">
+              Tersimpan ke cloud server
+            </div>
+          </div>
+          <div
+            style="
+              font-size: 9px;
+              color: #334155;
+              padding-top: 2px;
+              white-space: nowrap;
+            "
+          >
+            06:00
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH MODAL -->
+    <div class="sm" id="sm" onclick="if (event.target === this) closeSM();">
+      <div class="sm-box">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border);
+          "
+        >
+          <i class="fas fa-search" style="color: var(--muted)"></i>
+          <input
+            class="sm-inp"
+            id="smInp"
+            placeholder="Cari siswa, guru, kelas..."
+            oninput="runSearch(this.value)"
+          />
+          <kbd
+            style="
+              font-size: 10px;
+              color: var(--muted);
+              border: 1px solid var(--border);
+              padding: 2px 6px;
+              border-radius: 6px;
+              cursor: pointer;
+              flex-shrink: 0;
+            "
+            onclick="closeSM()"
+            >Esc</kbd
+          >
+        </div>
+        <div
+          id="smRes"
+          style="max-height: 300px; overflow-y: auto; padding: 6px 0"
+        >
+          <div style="padding: 14px 16px; font-size: 12px; color: var(--muted)">
+            Ketik untuk mulai mencari...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* DATA */
+      const siswaMaster = [
+        {
+          nama: "Ahmad Fauzan",
+          kelas: "XII RPL 1",
+          nis: "2024001",
+          jam: "06:58",
+          status: "Hadir",
+          ket: "—",
+        },
+        {
+          nama: "Naya Putri",
+          kelas: "XI TKJ 2",
+          nis: "2024002",
+          jam: "07:02",
+          status: "Hadir",
+          ket: "—",
+        },
+        {
+          nama: "Rehan Bumi",
+          kelas: "X MM 1",
+          nis: "2024003",
+          jam: "—",
+          status: "Alpa",
+          ket: "Tidak ada keterangan",
+        },
+        {
+          nama: "Siti Aminah",
+          kelas: "XII RPL 2",
+          nis: "2024004",
+          jam: "07:05",
+          status: "Hadir",
+          ket: "—",
+        },
+        {
+          nama: "Dimas Prayoga",
+          kelas: "X TKJ 1",
+          nis: "2024005",
+          jam: "—",
+          status: "Alpa",
+          ket: "Tidak ada keterangan",
+        },
+        {
+          nama: "Zahra Aulia",
+          kelas: "XI RPL 3",
+          nis: "2024006",
+          jam: "07:00",
+          status: "Hadir",
+          ket: "—",
+        },
+        {
+          nama: "Bagus Prasetyo",
+          kelas: "XII MM 2",
+          nis: "2024007",
+          jam: "07:15",
+          status: "Izin",
+          ket: "Surat izin orang tua",
+        },
+        {
+          nama: "Dewi Rahayu",
+          kelas: "XI RPL 1",
+          nis: "2024008",
+          jam: "07:03",
+          status: "Hadir",
+          ket: "—",
+        },
+        {
+          nama: "Fajar Nugroho",
+          kelas: "X RPL 2",
+          nis: "2024009",
+          jam: "—",
+          status: "Sakit",
+          ket: "Surat dokter",
+        },
+        {
+          nama: "Rina Maharani",
+          kelas: "XII TKJ 3",
+          nis: "2024010",
+          jam: "06:55",
+          status: "Hadir",
+          ket: "—",
+        },
+      ];
+      const guruMaster = [
+        {
+          nama: "Ust. Djayus, M.Kom",
+          jabatan: "Guru Produktif",
+          nip: "197501012005011001",
+          jam: "06:50",
+          status: "Hadir",
+        },
+        {
+          nama: "Ustzh. Sarah, M.Pd",
+          jabatan: "Guru Bahasa",
+          nip: "198203152010012003",
+          jam: "—",
+          status: "Belum",
+        },
+        {
+          nama: "Ust. Solihin, S.T",
+          jabatan: "Guru Normatif",
+          nip: "197805202006011002",
+          jam: "07:05",
+          status: "Hadir",
+        },
+        {
+          nama: "Ustzh. Maria, S.Pd",
+          jabatan: "Staff Kurikulum",
+          nip: "198007112008012005",
+          jam: "06:58",
+          status: "Hadir",
+        },
+        {
+          nama: "Ust. Mahfud, M.T",
+          jabatan: "Kepala Lab",
+          nip: "198510052012011004",
+          jam: "07:00",
+          status: "Hadir",
+        },
+        {
+          nama: "H. Ahmad Sodik",
+          jabatan: "Kesiswaan",
+          nip: "196908251994031003",
+          jam: "—",
+          status: "Tugas Luar",
+        },
+      ];
+      const jadwalData = {
+        Senin: [
+          {
+            jam: "07:00",
+            mapel: "Pemrograman Web",
+            guru: "Ust. Djayus, M.Kom",
+            kelas: "XII RPL 1",
+            ruang: "Lab RPL 1",
+          },
+          {
+            jam: "07:00",
+            mapel: "Bahasa Inggris",
+            guru: "Ustzh. Sarah, M.Pd",
+            kelas: "XI TKJ 2",
+            ruang: "Kelas XI-A",
+          },
+          {
+            jam: "08:30",
+            mapel: "Matematika",
+            guru: "Ust. Mahfud, M.T",
+            kelas: "XII TKJ 1",
+            ruang: "Kelas XII-B",
+          },
+          {
+            jam: "10:00",
+            mapel: "Desain Grafis",
+            guru: "Ustzh. Maria, S.Pd",
+            kelas: "X MM 1",
+            ruang: "Lab MM 1",
+          },
+        ],
+        Selasa: [
+          {
+            jam: "07:00",
+            mapel: "Fisika Terapan",
+            guru: "Ust. Solihin, S.T",
+            kelas: "XI RPL 3",
+            ruang: "Kelas XI-C",
+          },
+          {
+            jam: "08:30",
+            mapel: "Basis Data",
+            guru: "Ust. Djayus, M.Kom",
+            kelas: "XI RPL 1",
+            ruang: "Lab RPL 2",
+          },
+          {
+            jam: "10:00",
+            mapel: "PKN",
+            guru: "Ustzh. Sarah, M.Pd",
+            kelas: "X TKJ 1",
+            ruang: "Kelas X-A",
+          },
+        ],
+        Rabu: [
+          {
+            jam: "07:00",
+            mapel: "Pemrograman Dasar",
+            guru: "Ust. Djayus, M.Kom",
+            kelas: "X RPL 1",
+            ruang: "Lab RPL 1",
+          },
+          {
+            jam: "08:30",
+            mapel: "Kimia",
+            guru: "Ust. Solihin, S.T",
+            kelas: "X MM 1",
+            ruang: "Lab IPA",
+          },
+        ],
+        Kamis: [
+          {
+            jam: "07:00",
+            mapel: "Bahasa Indonesia",
+            guru: "Ustzh. Maria, S.Pd",
+            kelas: "XII RPL 2",
+            ruang: "Kelas XII-A",
+          },
+          {
+            jam: "08:30",
+            mapel: "Jaringan Komputer",
+            guru: "Ust. Mahfud, M.T",
+            kelas: "XI TKJ 2",
+            ruang: "Lab Jaringan",
+          },
+        ],
+        Jumat: [
+          {
+            jam: "07:00",
+            mapel: "Olahraga",
+            guru: "H. Ahmad Sodik",
+            kelas: "Semua Kelas",
+            ruang: "Lapangan",
+          },
+          {
+            jam: "09:00",
+            mapel: "Pendidikan Agama",
+            guru: "Ust. Solihin, S.T",
+            kelas: "XII RPL 1",
+            ruang: "Musholla",
+          },
+        ],
+        Sabtu: [
+          {
+            jam: "07:00",
+            mapel: "Ekskul Robotik",
+            guru: "Ust. Djayus, M.Kom",
+            kelas: "Pilihan",
+            ruang: "Lab RPL 1",
+          },
+          {
+            jam: "08:30",
+            mapel: "Ekskul Desain",
+            guru: "Ustzh. Maria, S.Pd",
+            kelas: "Pilihan",
+            ruang: "Lab MM 1",
+          },
+        ],
+      };
+
+      /* DATETIME */
+      function tick() {
+        const n = new Date();
+        document.getElementById("jam").textContent = n.toLocaleTimeString(
+          "id-ID",
+          { hour12: false },
+        );
+        document.getElementById("tgl").textContent = n.toLocaleDateString(
+          "id-ID",
+          { weekday: "short", day: "numeric", month: "short" },
+        );
+      }
+      setInterval(tick, 1000);
+      tick();
+
+      /* SIDEBAR */
+      function toggleSb() {
+        const sb = document.getElementById("sidebar"),
+          ov = document.getElementById("overlay"),
+          mw = document.getElementById("mw");
+        if (window.innerWidth < 900) {
+          sb.classList.toggle("open");
+          ov.classList.toggle("show");
+        } else {
+          sb.classList.toggle("hidden");
+          mw.classList.toggle("expanded");
+        }
+      }
+      function closeSb() {
+        document.getElementById("sidebar").classList.remove("open");
+        document.getElementById("overlay").classList.remove("show");
+      }
+
+      /* MOBILE SEARCH BTN */
+      function checkMob() {
+        document.getElementById("mSrch").style.display =
+          window.innerWidth < 900 ? "flex" : "none";
+      }
+      window.addEventListener("resize", checkMob);
+      checkMob();
+
+      /* RESPONSIVE GRID */
+      function adjGrid() {
+        const mg = document.getElementById("main-grid"),
+          cr = document.getElementById("chart-row");
+        if (window.innerWidth < 700) {
+          mg.style.gridTemplateColumns = "1fr";
+          cr.style.gridTemplateColumns = "1fr";
+        } else if (window.innerWidth < 1024) {
+          mg.style.gridTemplateColumns = "1fr";
+          cr.style.gridTemplateColumns = "1fr 1fr";
+        } else {
+          mg.style.gridTemplateColumns = "1fr 330px";
+          cr.style.gridTemplateColumns = "1fr 1fr";
+        }
+      }
+      window.addEventListener("resize", adjGrid);
+      adjGrid();
+
+      /* PAGES */
+      function goPage(id, el) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        document.getElementById("page-" + id).classList.add("active");
+        if (el) el.classList.add("active");
+        closeSb();
+        if (id === "siswa") renderSiswa(siswaMaster);
+        if (id === "guru") renderGuru();
+        if (id === "jadwal") filterJadwal("Senin");
+        if (id === "laporan") initLapChart();
+        setTimeout(
+          () =>
+            document
+              .querySelectorAll("#page-" + id + " .prog-f[data-w]")
+              .forEach((e) => (e.style.width = e.getAttribute("data-w"))),
+          150,
+        );
+      }
+
+      /* SISWA TABLE */
+      const stMap = { Hadir: "bg", Izin: "by", Sakit: "bb", Alpa: "br" };
+      function renderSiswa(data) {
+        document.getElementById("sw-tbody").innerHTML = data
+          .map(
+            (s, i) => `
+    <tr><td style="color:var(--muted);font-size:11px">${i + 1}</td>
+    <td><div style="display:flex;align-items:center;gap:7px"><img src="https://i.pravatar.cc/40?u=${encodeURIComponent(s.nama)}" style="width:26px;height:26px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'"><strong>${s.nama}</strong></div></td>
+    <td><span class="badge bc">${s.kelas}</span></td>
+    <td style="color:var(--muted);font-family:'Space Mono',monospace;font-size:11px">${s.nis}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:11px;color:${s.jam === "—" ? "var(--muted)" : "#06b6d4"}">${s.jam}</td>
+    <td style="text-align:center"><span class="badge ${stMap[s.status] || "bc"}">${s.status}</span></td>
+    <td style="color:var(--muted);font-size:11px">${s.ket}</td></tr>`,
+          )
+          .join("");
+        document.getElementById("sw-count").textContent = data.length;
+      }
+      function filterSiswa() {
+        const q = document.getElementById("siswaQ").value.toLowerCase();
+        const k = document.getElementById("fKelas").value;
+        const s = document.getElementById("fStatus").value;
+        renderSiswa(
+          siswaMaster.filter(
+            (x) =>
+              (!q || x.nama.toLowerCase().includes(q)) &&
+              (!k || x.kelas === k) &&
+              (!s || x.status === s),
+          ),
+        );
+      }
+      function exportCSV() {
+        const rows = [
+          ["Nama", "Kelas", "NIS", "Jam Masuk", "Status", "Keterangan"],
+          ...siswaMaster.map((s) => [
+            s.nama,
+            s.kelas,
+            s.nis,
+            s.jam,
+            s.status,
+            s.ket,
+          ]),
+        ];
+        const a = document.createElement("a");
+        a.href =
+          "data:text/csv;charset=utf-8," +
+          encodeURIComponent(rows.map((r) => r.join(",")).join("\n"));
+        a.download = "presensi_siswa.csv";
+        a.click();
+      }
+
+      /* GURU TABLE */
+      const grMap = { Hadir: "bg", Belum: "by", "Tugas Luar": "bb" };
+      function renderGuru() {
+        document.getElementById("gr-tbody").innerHTML = guruMaster
+          .map(
+            (g, i) => `
+    <tr><td style="color:var(--muted);font-size:11px">${i + 1}</td>
+    <td><div style="display:flex;align-items:center;gap:7px"><img src="https://i.pravatar.cc/40?u=${encodeURIComponent(g.nama) + "x"}" style="width:26px;height:26px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'"><strong>${g.nama}</strong></div></td>
+    <td><span class="badge bp">${g.jabatan}</span></td>
+    <td style="color:var(--muted);font-family:'Space Mono',monospace;font-size:10px">${g.nip}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:11px;color:${g.jam === "—" ? "var(--muted)" : "#06b6d4"}">${g.jam}</td>
+    <td style="text-align:center"><span class="badge ${grMap[g.status] || "bc"}">${g.status}</span></td></tr>`,
+          )
+          .join("");
+      }
+
+      /* JADWAL */
+      function filterJadwal(hari, btn) {
+        if (btn) {
+          document
+            .querySelectorAll("#hari-tabs .tab-b")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+        }
+        document.getElementById("jd-tbody").innerHTML = (jadwalData[hari] || [])
+          .map(
+            (j) => `
+    <tr><td><span style="font-family:'Space Mono',monospace;color:#06b6d4;font-weight:700;font-size:11px">${j.jam}</span></td>
+    <td style="font-weight:700;color:#e2e8f0">${j.mapel}</td>
+    <td style="color:#94a3b8">${j.guru}</td>
+    <td><span class="badge bc">${j.kelas}</span></td>
+    <td style="color:#64748b">${j.ruang}</td></tr>`,
+          )
+          .join("");
+      }
+
+      /* RFID SIMULATE */
+      const rfidNames = [
+        "Budi Santoso",
+        "Lina Wati",
+        "Hendra K.",
+        "Maya Sari",
+        "Rizki Pratama",
+      ];
+      function simulateRFID() {
+        const name = rfidNames[Math.floor(Math.random() * rfidNames.length)];
+        const r = document.getElementById("rfid-result");
+        document.getElementById("rfid-anim").innerHTML =
+          '<i class="fas fa-check-circle" style="color:#10b981"></i>';
+        r.innerHTML = `<span style="color:#10b981;font-weight:700">✓ Kartu terdeteksi: ${name}</span><br><span style="color:var(--muted);font-size:10px">${new Date().toLocaleTimeString("id-ID")}</span>`;
+        setTimeout(() => {
+          document.getElementById("rfid-anim").innerHTML =
+            '<i class="fas fa-wifi" style="color:rgba(6,182,212,.3)"></i>';
+          r.innerHTML = "";
+        }, 3000);
+      }
+
+      /* SETTINGS SAVE */
+      function saveSett(btn) {
+        const orig = btn.innerHTML;
+        btn.innerHTML =
+          '<i class="fas fa-check" style="margin-right:5px"></i>Tersimpan!';
+        setTimeout(() => (btn.innerHTML = orig), 2000);
+      }
+
+      /* NOTIFICATIONS */
+      function toggleN() {
+        document.getElementById("np").classList.toggle("show");
+      }
+      function markRead() {
+        document.getElementById("np").classList.remove("show");
+        document.getElementById("ndot").style.display = "none";
+      }
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest("#np") && !e.target.closest("#nBtn"))
+          document.getElementById("np").classList.remove("show");
+      });
+
+      /* SEARCH MODAL */
+      const allSearch = [
+        ...siswaMaster.map((s) => ({
+          nama: s.nama,
+          sub: "Siswa · " + s.kelas,
+          ic: "fas fa-user-graduate",
+          col: "rgba(6,182,212,.12)",
+          icol: "#06b6d4",
+        })),
+        ...guruMaster.map((g) => ({
+          nama: g.nama,
+          sub: "Guru · " + g.jabatan,
+          ic: "fas fa-chalkboard-teacher",
+          col: "rgba(139,92,246,.12)",
+          icol: "#8b5cf6",
+        })),
+      ];
+      function openSM() {
+        document.getElementById("sm").classList.add("show");
+        setTimeout(() => document.getElementById("smInp").focus(), 50);
+      }
+      function closeSM() {
+        document.getElementById("sm").classList.remove("show");
+        document.getElementById("smInp").value = "";
+        document.getElementById("smRes").innerHTML =
+          '<div style="padding:14px 16px;font-size:12px;color:var(--muted)">Ketik untuk mulai mencari...</div>';
+      }
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeSM();
+        if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+          e.preventDefault();
+          openSM();
+        }
+      });
+      function runSearch(q) {
+        const box = document.getElementById("smRes");
+        if (!q.trim()) {
+          box.innerHTML =
+            '<div style="padding:14px 16px;font-size:12px;color:var(--muted)">Ketik untuk mulai mencari...</div>';
+          return;
+        }
+        const found = allSearch.filter(
+          (d) =>
+            d.nama.toLowerCase().includes(q.toLowerCase()) ||
+            d.sub.toLowerCase().includes(q.toLowerCase()),
+        );
+        box.innerHTML = found.length
+          ? found
+              .slice(0, 8)
+              .map(
+                (d) => `
+    <div class="sr"><div class="sr-icon" style="background:${d.col}"><i class="${d.ic}" style="color:${d.icol}"></i></div>
+    <div><div style="font-size:13px;font-weight:600">${d.nama}</div><div style="font-size:10px;color:var(--muted)">${d.sub}</div></div></div>`,
+              )
+              .join("")
+          : '<div style="padding:14px 16px;font-size:12px;color:var(--muted)">Tidak ditemukan.</div>';
+      }
+
+      /* CHARTS */
+      const tt = {
+        backgroundColor: "#1e293b",
+        titleColor: "#e2e8f0",
+        bodyColor: "#94a3b8",
+        borderColor: "rgba(6,182,212,.3)",
+        borderWidth: 1,
+        padding: 8,
+        cornerRadius: 8,
+      };
+      const wCtx = document.getElementById("weeklyChart").getContext("2d");
+      const wg = wCtx.createLinearGradient(0, 0, 0, 140);
+      wg.addColorStop(0, "rgba(6,182,212,.85)");
+      wg.addColorStop(1, "rgba(59,130,246,.35)");
+      new Chart(wCtx, {
+        type: "bar",
+        data: {
+          labels: ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"],
+          datasets: [
+            {
+              label: "Hadir",
+              data: [1050, 1100, 1080, 1120, 1090, 980, 0],
+              backgroundColor: wg,
+              borderRadius: 7,
+              borderSkipped: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: tt },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: "#475569", font: { size: 9, weight: "700" } },
+            },
+            y: {
+              grid: { color: "rgba(255,255,255,.04)" },
+              ticks: { color: "#475569", font: { size: 9 }, maxTicksLimit: 5 },
+              border: { display: false },
+            },
+          },
+        },
+      });
+
+      const dCtx = document.getElementById("donutChart").getContext("2d");
+      new Chart(dCtx, {
+        type: "doughnut",
+        data: {
+          labels: ["Hadir", "Izin", "Sakit", "Alpa"],
+          datasets: [
+            {
+              data: [1120, 14, 80, 3],
+              backgroundColor: ["#06b6d4", "#f59e0b", "#8b5cf6", "#ef4444"],
+              borderWidth: 0,
+              hoverOffset: 5,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "76%",
+          plugins: { legend: { display: false }, tooltip: tt },
+        },
+      });
+
+      let lapCI = null;
+      function initLapChart() {
+        if (lapCI) return;
+        const ctx = document.getElementById("laporanChart").getContext("2d");
+        const g = ctx.createLinearGradient(0, 0, 0, 190);
+        g.addColorStop(0, "rgba(6,182,212,.22)");
+        g.addColorStop(1, "rgba(6,182,212,0)");
+        lapCI = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: ["Mg 1", "Mg 2", "Mg 3", "Mg 4"],
+            datasets: [
+              {
+                label: "Siswa Hadir",
+                data: [1080, 1095, 1110, 1120],
+                borderColor: "#06b6d4",
+                backgroundColor: g,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: "#06b6d4",
+                pointRadius: 4,
+              },
+              {
+                label: "Guru Hadir",
+                data: [56, 58, 57, 58],
+                borderColor: "#8b5cf6",
+                backgroundColor: "transparent",
+                tension: 0.4,
+                fill: false,
+                pointBackgroundColor: "#8b5cf6",
+                pointRadius: 4,
+                yAxisID: "y2",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                labels: {
+                  color: "#94a3b8",
+                  font: { size: 11 },
+                  usePointStyle: true,
+                },
+              },
+              tooltip: tt,
+            },
+            scales: {
+              x: {
+                grid: { color: "rgba(255,255,255,.04)" },
+                ticks: { color: "#475569", font: { size: 11 } },
+              },
+              y: {
+                grid: { color: "rgba(255,255,255,.04)" },
+                ticks: {
+                  color: "#475569",
+                  font: { size: 9 },
+                  maxTicksLimit: 5,
+                },
+                border: { display: false },
+              },
+              y2: {
+                position: "right",
+                grid: { display: false },
+                ticks: { color: "#8b5cf6", font: { size: 9 } },
+              },
+            },
+          },
+        });
+        setTimeout(
+          () =>
+            document
+              .querySelectorAll("#page-laporan .prog-f[data-w]")
+              .forEach((e) => (e.style.width = e.getAttribute("data-w"))),
+          150,
+        );
+      }
+
+      /* LIVE FEED */
+      let curTab = "siswa",
+        cntH = 0,
+        cntI = 0,
+        cntA = 0;
+      const dSiswa = {
+        names: [
+          "Ahmad Fauzan",
+          "Naya Putri",
+          "Rehan Bumi",
+          "Siti Aminah",
+          "Dimas Prayoga",
+          "Zahra Aulia",
+          "Bagus Prasetyo",
+          "Dewi Rahayu",
+          "Fajar Nugroho",
+          "Rina Maharani",
+        ],
+        subs: [
+          "XII RPL 1",
+          "XI TKJ 2",
+          "X MM 1",
+          "XII RPL 2",
+          "X TKJ 1",
+          "XI RPL 3",
+          "XII MM 2",
+          "XI RPL 1",
+          "X RPL 2",
+          "XII TKJ 3",
+        ],
+        statuses: [
+          "hadir",
+          "hadir",
+          "hadir",
+          "hadir",
+          "hadir",
+          "hadir",
+          "izin",
+          "sakit",
+          "alpa",
+          "hadir",
+        ],
+      };
+      const dGuru = {
+        names: [
+          "Ust. Djayus",
+          "Ust. Solihin",
+          "Ustzh. Maria",
+          "Ust. Mahfud",
+          "H. Ahmad Sodik",
+          "Ustzh. Sarah",
+        ],
+        subs: [
+          "Guru Produktif",
+          "Guru Normatif",
+          "Staff Kurikulum",
+          "Kepala Lab",
+          "Kesiswaan",
+          "Guru Bahasa",
+        ],
+        statuses: ["hadir", "hadir", "hadir", "tugas", "hadir", "hadir"],
+      };
+      const sCfg = {
+        hadir: { label: "Hadir", cls: "bg", dot: "#10b981" },
+        izin: { label: "Izin", cls: "by", dot: "#f59e0b" },
+        sakit: { label: "Sakit", cls: "bb", dot: "#3b82f6" },
+        alpa: { label: "Alpa", cls: "br", dot: "#ef4444" },
+        tugas: { label: "Tugas", cls: "bc", dot: "#06b6d4" },
+      };
+
+      function addFeed() {
+        const c = document.getElementById("presensi-container");
+        const d = curTab === "siswa" ? dSiswa : dGuru;
+        const i = Math.floor(Math.random() * d.names.length);
+        const nm = d.names[i],
+          sb = d.subs[i],
+          st = d.statuses[i];
+        const tm = new Date().toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+        const sc = sCfg[st];
+        if (st === "hadir") cntH++;
+        else if (st === "izin" || st === "sakit") cntI++;
+        else if (st === "alpa") cntA++;
+        document.getElementById("cnt-h").textContent = cntH;
+        document.getElementById("cnt-i").textContent = cntI;
+        document.getElementById("cnt-a").textContent = cntA;
+        const div = document.createElement("div");
+        div.className = "feed-card";
+        div.innerHTML = `<div style="position:relative;flex-shrink:0"><img style="width:32px;height:32px;border-radius:50%;object-fit:cover" src="https://i.pravatar.cc/80?u=${encodeURIComponent(nm)}" alt="${nm}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(nm)}&background=0f172a&color=06b6d4&size=32'"><div style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:${sc.dot};border:2px solid var(--bg)"></div></div><div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nm}</div><div style="font-size:9px;color:#06b6d4;font-weight:700;text-transform:uppercase;letter-spacing:.04em">${sb}</div></div><div style="text-align:right;flex-shrink:0"><span class="badge ${sc.cls}" style="font-size:8px">${sc.label}</span><div style="font-size:8px;color:#334155;margin-top:3px;font-family:'Space Mono',monospace">${tm}</div></div>`;
+        c.prepend(div);
+        if (c.children.length > 20) c.lastElementChild.remove();
+      }
+      function switchTab(tab) {
+        curTab = tab;
+        cntH = 0;
+        cntI = 0;
+        cntA = 0;
+        document.getElementById("cnt-h").textContent = 0;
+        document.getElementById("cnt-i").textContent = 0;
+        document.getElementById("cnt-a").textContent = 0;
+        document.getElementById("tab-siswa").className =
+          "tab-b" + (tab === "siswa" ? " active" : "");
+        document.getElementById("tab-guru").className =
+          "tab-b" + (tab === "guru" ? " active" : "");
+        document.getElementById("presensi-container").innerHTML = "";
+        for (let i = 0; i < 7; i++) setTimeout(addFeed, i * 160);
+      }
+      for (let i = 0; i < 8; i++) setTimeout(addFeed, i * 140);
+      setInterval(addFeed, 3500);
+
+      /* INIT PROG BARS */
+      setTimeout(
+        () =>
+          document
+            .querySelectorAll("#page-dashboard .prog-f[data-w]")
+            .forEach((e) => (e.style.width = e.getAttribute("data-w"))),
+        250,
+      );
+
+      /* INIT JADWAL */
+      filterJadwal("Senin");
+    </script>
+  </body>
+</html>

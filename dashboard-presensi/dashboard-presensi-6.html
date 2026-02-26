@@ -1,0 +1,1319 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Presensi | SMK Syubbanul Wathon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --cyan: #06b6d4;
+        --blue: #3b82f6;
+        --purple: #8b5cf6;
+        --navy: #0f172a;
+        --navy-soft: #1e293b;
+        --surface: rgba(255, 255, 255, 0.06);
+        --border: rgba(6, 182, 212, 0.18);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background: #080f1a;
+        color: #e2e8f0;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* Background mesh */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse 80% 60% at 10% 10%,
+            rgba(6, 182, 212, 0.12) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 60% 50% at 90% 80%,
+            rgba(59, 130, 246, 0.1) 0%,
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse 50% 40% at 50% 50%,
+            rgba(139, 92, 246, 0.06) 0%,
+            transparent 60%
+          );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      body > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 53px;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(20px);
+        border-right: 1px solid var(--border);
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem 0;
+        z-index: 100;
+        transition: width 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        overflow: hidden;
+      }
+      .sidebar:hover {
+        width: 220px;
+      }
+
+      .sidebar-logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        font-weight: 900;
+        flex-shrink: 0;
+        margin-bottom: 2rem;
+      }
+
+      .nav-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0.75rem 14px;
+        border-radius: 0 16px 16px 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #64748b;
+        white-space: nowrap;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .nav-item:hover {
+        background: rgba(6, 182, 212, 0.1);
+        color: #06b6d4;
+      }
+      .nav-item.active {
+        background: linear-gradient(
+          90deg,
+          rgba(6, 182, 212, 0.2),
+          rgba(6, 182, 212, 0.05)
+        );
+        color: #06b6d4;
+        border-right: 2px solid #06b6d4;
+      }
+      .nav-item i {
+        width: 24px;
+        text-align: center;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+
+      /* Main layout */
+      .main-wrap {
+        margin-left: 72px;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      /* Header */
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem 2rem;
+        background: rgba(8, 15, 26, 0.8);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+
+      /* Glass card */
+      .card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+      }
+      .card:hover {
+        border-color: rgba(6, 182, 212, 0.35);
+        background: rgba(255, 255, 255, 0.07);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(6, 182, 212, 0.1);
+      }
+
+      /* Stat card */
+      .stat-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 1.25rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .stat-card::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent, #06b6d4);
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+      }
+      .stat-card:hover::after {
+        opacity: 1;
+      }
+
+      /* Progress bar */
+      .progress-bar {
+        height: 4px;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        border-radius: 99px;
+        transition: width 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      /* Gradient text */
+      .gradient-text {
+        background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-size: 200% 200%;
+        animation: gradient 5s ease infinite;
+      }
+      @keyframes gradient {
+        0%,
+        100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+      }
+
+      /* Badge */
+      .badge {
+        padding: 2px 10px;
+        border-radius: 99px;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .badge-green {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+      .badge-yellow {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+      .badge-red {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+      .badge-blue {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+      .badge-cyan {
+        background: rgba(6, 182, 212, 0.15);
+        color: #06b6d4;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+      }
+
+      /* Tab */
+      .tab-btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #64748b;
+      }
+      .tab-btn.active {
+        background: rgba(6, 182, 212, 0.15);
+        color: #06b6d4;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+      }
+      .tab-btn:not(.active):hover {
+        color: #94a3b8;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      /* Entry animation */
+      .entry-anim {
+        animation: slideIn 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      /* Running text */
+      .marquee-wrap {
+        overflow: hidden;
+      }
+      .marquee {
+        display: inline-block;
+        white-space: nowrap;
+        padding-left: 100%;
+        animation: marquee 22s linear infinite;
+      }
+      @keyframes marquee {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-100%);
+        }
+      }
+
+      /* Table */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      thead th {
+        padding: 0.75rem 1rem;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #475569;
+        border-bottom: 1px solid var(--border);
+      }
+      tbody td {
+        padding: 0.75rem 1rem;
+        font-size: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      tbody tr:hover td {
+        background: rgba(6, 182, 212, 0.04);
+      }
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* Search input */
+      .search-input {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.5rem 1rem 0.5rem 2.5rem;
+        font-size: 12px;
+        color: #e2e8f0;
+        outline: none;
+        transition: all 0.2s;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      .search-input:focus {
+        border-color: rgba(6, 182, 212, 0.5);
+        background: rgba(6, 182, 212, 0.05);
+      }
+      .search-input::placeholder {
+        color: #475569;
+      }
+
+      /* Notification dot */
+      .notif-dot {
+        width: 8px;
+        height: 8px;
+        background: #ef4444;
+        border-radius: 50%;
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        border: 2px solid #080f1a;
+        animation: pulse-red 2s ease-in-out infinite;
+      }
+      @keyframes pulse-red {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 4px rgba(239, 68, 68, 0);
+        }
+      }
+
+      /* Online dot */
+      .online-dot {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        animation: ping 2s ease-in-out infinite;
+      }
+      @keyframes ping {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+        }
+      }
+
+      /* Avatar group */
+      .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid #080f1a;
+        object-fit: cover;
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(6, 182, 212, 0.4);
+        border-radius: 10px;
+      }
+
+      /* Mobile */
+      @media (max-width: 768px) {
+        .sidebar {
+          display: none;
+        }
+        .main-wrap {
+          margin-left: 0;
+        }
+        .mobile-header-btn {
+          display: flex;
+        }
+      }
+
+      /* Stagger animation for cards */
+      .stagger-1 {
+        animation: fadeUp 0.5s 0.1s both;
+      }
+      .stagger-2 {
+        animation: fadeUp 0.5s 0.2s both;
+      }
+      .stagger-3 {
+        animation: fadeUp 0.5s 0.3s both;
+      }
+      .stagger-4 {
+        animation: fadeUp 0.5s 0.4s both;
+      }
+      .stagger-5 {
+        animation: fadeUp 0.5s 0.5s both;
+      }
+      .stagger-6 {
+        animation: fadeUp 0.5s 0.6s both;
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Donut ring */
+      .donut-label {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Section title */
+      .section-title {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #475569;
+        margin-bottom: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <img src="/assets/cropped-SMK-T.png" alt="" />
+      </div>
+
+      <nav style="width: 100%">
+        <div class="nav-item active" onclick="setNav(this)">
+          <i class="fas fa-th-large"></i><span>Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          <i class="fas fa-user-graduate"></i><span>Siswa</span>
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          <i class="fas fa-chalkboard-teacher"></i><span>Guru & Staff</span>
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          <i class="fas fa-chart-bar"></i><span>Laporan</span>
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          <i class="fas fa-calendar-alt"></i><span>Jadwal</span>
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          <i class="fas fa-id-card"></i><span>RFID Manager</span>
+        </div>
+      </nav>
+
+      <div style="margin-top: auto; width: 100%">
+        <div class="nav-item" onclick="setNav(this)">
+          <i class="fas fa-cog"></i><span>Pengaturan</span>
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          <i class="fas fa-sign-out-alt"></i><span>Keluar</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <div class="main-wrap" id="main wrap" style="margin-left: 50px">
+      <!-- Header -->
+      <header>
+        <div class="flex items-center gap-3">
+          <div>
+            <h1
+              class="text-sm font-extrabold gradient-text uppercase tracking-tight leading-none"
+            >
+              SMK Syubbanul Wathon
+            </h1>
+            <p
+              class="text-[10px] text-slate-500 font-bold tracking-widest uppercase mt-0.5"
+            >
+              Sistem Presensi Terintegrasi
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <!-- Search -->
+          <div class="relative hidden md:block">
+            <i
+              class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"
+            ></i>
+            <input
+              class="search-input w-56"
+              type="text"
+              placeholder="Cari siswa, guru..."
+            />
+          </div>
+
+          <!-- Time -->
+          <div class="text-right hidden sm:block">
+            <div
+              id="tanggal"
+              class="text-[10px] text-slate-500 font-bold uppercase"
+            ></div>
+            <div
+              id="jam"
+              class="text-lg font-black tracking-tighter"
+              style="font-family: &quot;Space Mono&quot;, monospace"
+            ></div>
+          </div>
+
+          <!-- Notification -->
+          <div
+            class="relative cursor-pointer p-2 rounded-xl"
+            style="background: rgba(255, 255, 255, 0.05)"
+          >
+            <i class="fas fa-bell text-slate-400 text-sm"></i>
+            <div class="notif-dot"></div>
+          </div>
+
+          <!-- Online status -->
+          <div
+            class="flex items-center gap-2 px-3 py-1.5 rounded-xl"
+            style="
+              background: rgba(16, 185, 129, 0.1);
+              border: 1px solid rgba(16, 185, 129, 0.2);
+            "
+          >
+            <div class="online-dot"></div>
+            <span class="text-[10px] font-black text-green-400 uppercase"
+              >Online</span
+            >
+          </div>
+        </div>
+      </header>
+
+      <!-- Running text -->
+      <div
+        class="marquee-wrap py-2 px-6"
+        style="
+          background: rgba(6, 182, 212, 0.06);
+          border-bottom: 1px solid var(--border);
+        "
+      >
+        <span
+          class="marquee text-[10px] font-bold text-cyan-500 uppercase tracking-widest"
+        >
+          <i class="fas fa-bullhorn mr-3"></i>
+          Informasikan kehadiran tepat waktu untuk menghindari akumulasi poin
+          kedisiplinan &nbsp;•&nbsp; Gunakan kartu RFID dengan benar dan jaga
+          kondisinya &nbsp;•&nbsp; SMK BISA, SMK HEBAT! Prestasi terbaik dimulai
+          dari kedisiplinan &nbsp;•&nbsp; Sistem presensi digital terintegrasi
+          aktif 24/7 &nbsp;•&nbsp;
+        </span>
+      </div>
+
+      <!-- Content -->
+      <main class="p-5 flex flex-col gap-5">
+        <!-- KPI Cards Row -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="stat-card stagger-1" style="--accent: #06b6d4">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <p class="section-title mb-0">Total Siswa Hadir</p>
+                <p class="text-3xl font-black mt-1" id="kpi-hadir-siswa">
+                  1,120
+                </p>
+              </div>
+              <div
+                class="p-2.5 rounded-xl"
+                style="background: rgba(6, 182, 212, 0.12)"
+              >
+                <i class="fas fa-user-graduate text-cyan-400 text-lg"></i>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                style="
+                  background: linear-gradient(90deg, #06b6d4, #3b82f6);
+                  width: 92%;
+                "
+              ></div>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-2 font-semibold">
+              92% dari 1,217 total siswa
+            </p>
+          </div>
+
+          <div class="stat-card stagger-2" style="--accent: #8b5cf6">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <p class="section-title mb-0">Guru & Staff Hadir</p>
+                <p class="text-3xl font-black mt-1" id="kpi-hadir-guru">58</p>
+              </div>
+              <div
+                class="p-2.5 rounded-xl"
+                style="background: rgba(139, 92, 246, 0.12)"
+              >
+                <i
+                  class="fas fa-chalkboard-teacher text-purple-400 text-lg"
+                ></i>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                style="
+                  background: linear-gradient(90deg, #8b5cf6, #ec4899);
+                  width: 90%;
+                "
+              ></div>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-2 font-semibold">
+              90% dari 64 total tenaga didik
+            </p>
+          </div>
+
+          <div class="stat-card stagger-3" style="--accent: #f59e0b">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <p class="section-title mb-0">Izin Hari Ini</p>
+                <p class="text-3xl font-black mt-1">16</p>
+              </div>
+              <div
+                class="p-2.5 rounded-xl"
+                style="background: rgba(245, 158, 11, 0.12)"
+              >
+                <i class="fas fa-file-alt text-amber-400 text-lg"></i>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                style="
+                  background: linear-gradient(90deg, #f59e0b, #ef4444);
+                  width: 13%;
+                "
+              ></div>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-2 font-semibold">
+              14 siswa · 2 guru
+            </p>
+          </div>
+
+          <div class="stat-card stagger-4" style="--accent: #ef4444">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <p class="section-title mb-0">Alpha / Tanpa Ket.</p>
+                <p class="text-3xl font-black mt-1 text-red-400">3</p>
+              </div>
+              <div
+                class="p-2.5 rounded-xl"
+                style="background: rgba(239, 68, 68, 0.12)"
+              >
+                <i class="fas fa-exclamation-triangle text-red-400 text-lg"></i>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                style="
+                  background: linear-gradient(90deg, #ef4444, #dc2626);
+                  width: 2%;
+                "
+              ></div>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-2 font-semibold">
+              Perlu tindak lanjut segera
+            </p>
+          </div>
+        </div>
+
+        <!-- Middle Row: Charts + Live Feed -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Left: Charts -->
+          <div class="lg:col-span-8 flex flex-col gap-5">
+            <!-- Chart Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 stagger-3">
+              <!-- Weekly Trend Bar Chart -->
+              <div class="card p-4">
+                <div class="flex justify-between items-center mb-4">
+                  <div>
+                    <p class="section-title mb-0">Tren Kehadiran Mingguan</p>
+                    <p class="text-xs text-slate-400 font-medium">
+                      7 hari terakhir
+                    </p>
+                  </div>
+                  <span class="badge badge-cyan">Siswa</span>
+                </div>
+                <div style="height: 160px; position: relative">
+                  <canvas id="weeklyChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Donut Chart -->
+              <div class="card p-4">
+                <div class="flex justify-between items-center mb-4">
+                  <div>
+                    <p class="section-title mb-0">Distribusi Status</p>
+                    <p class="text-xs text-slate-400 font-medium">Hari ini</p>
+                  </div>
+                  <span class="badge badge-blue">Live</span>
+                </div>
+                <div class="flex items-center gap-4">
+                  <div
+                    style="
+                      height: 140px;
+                      width: 140px;
+                      position: relative;
+                      flex-shrink: 0;
+                    "
+                  >
+                    <canvas id="donutChart"></canvas>
+                    <div class="donut-label">
+                      <span class="text-xl font-black">92%</span>
+                      <span
+                        class="text-[9px] text-slate-500 font-bold uppercase"
+                        >Hadir</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-2 flex-1">
+                    <div class="flex justify-between items-center">
+                      <span
+                        class="flex items-center gap-2 text-xs text-slate-300"
+                        ><span
+                          class="w-2.5 h-2.5 rounded-sm inline-block"
+                          style="background: #06b6d4"
+                        ></span
+                        >Hadir</span
+                      >
+                      <span class="text-xs font-bold">1,120</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span
+                        class="flex items-center gap-2 text-xs text-slate-300"
+                        ><span
+                          class="w-2.5 h-2.5 rounded-sm inline-block"
+                          style="background: #f59e0b"
+                        ></span
+                        >Izin</span
+                      >
+                      <span class="text-xs font-bold">14</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span
+                        class="flex items-center gap-2 text-xs text-slate-300"
+                        ><span
+                          class="w-2.5 h-2.5 rounded-sm inline-block"
+                          style="background: #8b5cf6"
+                        ></span
+                        >Sakit</span
+                      >
+                      <span class="text-xs font-bold">80</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span
+                        class="flex items-center gap-2 text-xs text-slate-300"
+                        ><span
+                          class="w-2.5 h-2.5 rounded-sm inline-block"
+                          style="background: #ef4444"
+                        ></span
+                        >Alpa</span
+                      >
+                      <span class="text-xs font-bold text-red-400">3</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Teaching Session Table -->
+            <div class="card overflow-hidden stagger-4">
+              <div
+                class="flex justify-between items-center p-4 border-b"
+                style="border-color: var(--border)"
+              >
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-clock text-cyan-500 text-sm"></i>
+                  <h2 class="text-sm font-bold uppercase tracking-wide">
+                    Monitoring Sesi Mengajar
+                  </h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="badge badge-green">Aktif</span>
+                  <span class="text-[10px] text-slate-500 font-bold"
+                    >Senin, 07:00–13:30</span
+                  >
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="text-left">Jam</th>
+                      <th class="text-left">Mata Pelajaran</th>
+                      <th class="text-left">Guru</th>
+                      <th class="text-left">Ruang</th>
+                      <th class="text-left">Kelas</th>
+                      <th class="text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="session-table">
+                    <tr>
+                      <td>
+                        <span
+                          style="font-family: &quot;Space Mono&quot;, monospace"
+                          class="text-cyan-400 font-bold text-xs"
+                          >07:00</span
+                        >
+                      </td>
+                      <td class="font-bold text-slate-200">Pemrograman Web</td>
+                      <td class="text-slate-400">Ust. Djayus, M.Kom</td>
+                      <td class="text-slate-500">Lab RPL 1</td>
+                      <td class="text-slate-500">XII RPL 1</td>
+                      <td class="text-center">
+                        <span class="badge badge-green">Masuk</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span
+                          style="font-family: &quot;Space Mono&quot;, monospace"
+                          class="text-cyan-400 font-bold text-xs"
+                          >07:00</span
+                        >
+                      </td>
+                      <td class="font-bold text-slate-200">Bahasa Inggris</td>
+                      <td class="text-slate-400">Ustzh. Sarah, M.Pd</td>
+                      <td class="text-slate-500">Kelas XI-A</td>
+                      <td class="text-slate-500">XI TKJ 2</td>
+                      <td class="text-center">
+                        <span class="badge badge-yellow">Belum</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span
+                          style="font-family: &quot;Space Mono&quot;, monospace"
+                          class="text-cyan-400 font-bold text-xs"
+                          >08:30</span
+                        >
+                      </td>
+                      <td class="font-bold text-slate-200">Matematika</td>
+                      <td class="text-slate-400">Ust. Mahfud, M.T</td>
+                      <td class="text-slate-500">Kelas XII-B</td>
+                      <td class="text-slate-500">XII TKJ 1</td>
+                      <td class="text-center">
+                        <span class="badge badge-green">Masuk</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span
+                          style="font-family: &quot;Space Mono&quot;, monospace"
+                          class="text-cyan-400 font-bold text-xs"
+                          >08:30</span
+                        >
+                      </td>
+                      <td class="font-bold text-slate-200">Desain Grafis</td>
+                      <td class="text-slate-400">Ustzh. Maria, S.Pd</td>
+                      <td class="text-slate-500">Lab MM 1</td>
+                      <td class="text-slate-500">X MM 1</td>
+                      <td class="text-center">
+                        <span class="badge badge-green">Masuk</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span
+                          style="font-family: &quot;Space Mono&quot;, monospace"
+                          class="text-cyan-400 font-bold text-xs"
+                          >10:00</span
+                        >
+                      </td>
+                      <td class="font-bold text-slate-200">Fisika Terapan</td>
+                      <td class="text-slate-400">Ust. Solihin, S.T</td>
+                      <td class="text-slate-500">Kelas XI-C</td>
+                      <td class="text-slate-500">XI RPL 3</td>
+                      <td class="text-center">
+                        <span class="badge badge-blue">Mendatang</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Video -->
+            <div
+              class="card overflow-hidden stagger-5"
+              style="aspect-ratio: 16/9; position: relative"
+            >
+              <iframe
+                class="w-full h-full"
+                src="https://www.youtube.com/embed/JDL7VaJcZzU?autoplay=1&mute=1&loop=1&playlist=JDL7VaJcZzU&controls=0"
+                frameborder="0"
+                allowfullscreen
+              ></iframe>
+              <div
+                class="absolute bottom-0 left-0 right-0 p-4"
+                style="
+                  background: linear-gradient(
+                    to top,
+                    rgba(0, 0, 0, 0.7),
+                    transparent
+                  );
+                "
+              >
+                <div class="flex items-center gap-2">
+                  <span class="badge badge-red">▶ Live Profil</span>
+                  <p class="text-white text-xs font-semibold">
+                    SMK Syubbanul Wathon — Sekolah Unggulan
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Live Feed -->
+          <div class="lg:col-span-4 stagger-2">
+            <div
+              class="card flex flex-col"
+              style="
+                height: 100%;
+                min-height: 600px;
+                position: sticky;
+                top: 72px;
+              "
+            >
+              <!-- Tabs -->
+              <div
+                class="flex gap-2 p-3"
+                style="border-bottom: 1px solid var(--border)"
+              >
+                <button
+                  class="tab-btn active"
+                  id="tab-siswa"
+                  onclick="switchTab('siswa')"
+                >
+                  <i class="fas fa-user-graduate mr-1"></i>Siswa
+                </button>
+                <button
+                  class="tab-btn"
+                  id="tab-guru"
+                  onclick="switchTab('guru')"
+                >
+                  <i class="fas fa-user-tie mr-1"></i>Guru
+                </button>
+                <div class="ml-auto flex items-center gap-1.5">
+                  <div
+                    style="
+                      width: 6px;
+                      height: 6px;
+                      border-radius: 50%;
+                      background: #ef4444;
+                      animation: pulse-red 2s infinite;
+                    "
+                  ></div>
+                  <span class="text-[9px] font-black text-red-400 uppercase"
+                    >Live</span
+                  >
+                </div>
+              </div>
+
+              <!-- Summary badges -->
+              <div
+                class="p-3 flex gap-2 flex-wrap"
+                style="border-bottom: 1px solid var(--border)"
+              >
+                <span class="badge badge-green"
+                  ><i class="fas fa-check mr-1"></i
+                  ><span id="count-hadir">0</span> Hadir</span
+                >
+                <span class="badge badge-yellow"
+                  ><i class="fas fa-file mr-1"></i
+                  ><span id="count-izin">0</span> Izin</span
+                >
+                <span class="badge badge-red"
+                  ><i class="fas fa-times mr-1"></i
+                  ><span id="count-alpa">0</span> Alpa</span
+                >
+              </div>
+
+              <!-- Feed -->
+              <div
+                id="presensi-container"
+                class="flex-1 overflow-y-auto p-3 space-y-2"
+              ></div>
+
+              <div
+                class="p-2.5 text-center"
+                style="border-top: 1px solid var(--border)"
+              >
+                <p class="text-[9px] text-slate-600 font-medium">
+                  Auto-refresh aktif · 20 log terakhir
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      // ===== DATE TIME =====
+      function updateDateTime() {
+        const now = new Date();
+        document.getElementById("jam").textContent = now.toLocaleTimeString(
+          "id-ID",
+          { hour12: false },
+        );
+        document.getElementById("tanggal").textContent = now.toLocaleDateString(
+          "id-ID",
+          { weekday: "long", day: "numeric", month: "short", year: "numeric" },
+        );
+      }
+      setInterval(updateDateTime, 1000);
+      updateDateTime();
+
+      // ===== SIDEBAR NAV =====
+      function setNav(el) {
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        el.classList.add("active");
+      }
+
+      // ===== CHARTS =====
+      const chartDefaults = {
+        color: "#94a3b8",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#1e293b",
+            titleColor: "#e2e8f0",
+            bodyColor: "#94a3b8",
+            borderColor: "rgba(6,182,212,0.3)",
+            borderWidth: 1,
+            padding: 10,
+            cornerRadius: 10,
+          },
+        },
+      };
+
+      // Weekly Bar Chart
+      const weeklyCtx = document.getElementById("weeklyChart").getContext("2d");
+      new Chart(weeklyCtx, {
+        type: "bar",
+        data: {
+          labels: ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"],
+          datasets: [
+            {
+              label: "Hadir",
+              data: [1050, 1100, 1080, 1120, 1090, 980, 0],
+              backgroundColor: (ctx) => {
+                const g = weeklyCtx.createLinearGradient(0, 0, 0, 200);
+                g.addColorStop(0, "rgba(6,182,212,0.8)");
+                g.addColorStop(1, "rgba(59,130,246,0.3)");
+                return g;
+              },
+              borderRadius: 8,
+              borderSkipped: false,
+            },
+          ],
+        },
+        options: {
+          ...chartDefaults,
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: "#475569", font: { size: 10, weight: "700" } },
+            },
+            y: {
+              grid: { color: "rgba(255,255,255,0.04)" },
+              ticks: { color: "#475569", font: { size: 9 }, maxTicksLimit: 5 },
+              border: { display: false },
+            },
+          },
+        },
+      });
+
+      // Donut Chart
+      const donutCtx = document.getElementById("donutChart").getContext("2d");
+      new Chart(donutCtx, {
+        type: "doughnut",
+        data: {
+          labels: ["Hadir", "Izin", "Sakit", "Alpa"],
+          datasets: [
+            {
+              data: [1120, 14, 80, 3],
+              backgroundColor: ["#06b6d4", "#f59e0b", "#8b5cf6", "#ef4444"],
+              borderWidth: 0,
+              hoverOffset: 6,
+            },
+          ],
+        },
+        options: {
+          ...chartDefaults,
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "75%",
+          plugins: { ...chartDefaults.plugins },
+        },
+      });
+
+      // ===== LIVE FEED =====
+      let currentTab = "siswa";
+      let hadirCount = 0,
+        izinCount = 0,
+        alpaCount = 0;
+
+      const dataSiswa = {
+        names: [
+          "Ahmad Fauzan",
+          "Naya Putri",
+          "Rehan Bumi",
+          "Siti Aminah",
+          "Dimas Prayoga",
+          "Zahra Aulia",
+          "Bagus Prasetyo",
+          "Dewi Rahayu",
+          "Fajar Nugroho",
+          "Rina Maharani",
+        ],
+        subs: [
+          "XII RPL 1",
+          "XI TKJ 2",
+          "X MM 1",
+          "XII RPL 2",
+          "X TKJ 1",
+          "XI RPL 3",
+          "XII MM 2",
+          "XI RPL 1",
+          "X RPL 2",
+          "XII TKJ 3",
+        ],
+        statuses: [
+          "hadir",
+          "hadir",
+          "hadir",
+          "hadir",
+          "hadir",
+          "hadir",
+          "izin",
+          "sakit",
+          "alpa",
+          "hadir",
+        ],
+      };
+
+      const dataGuru = {
+        names: [
+          "Ust. Djayus, M.Kom",
+          "Ust. Solihin, S.T",
+          "Ustzh. Maria, S.Pd",
+          "Ust. Mahfud, M.T",
+          "H. Ahmad Sodik",
+          "Ustzh. Sarah, M.Pd",
+        ],
+        subs: [
+          "Guru Produktif",
+          "Guru Normatif",
+          "Staff Kurikulum",
+          "Kepala Lab",
+          "Kesiswaan",
+          "Guru Bahasa",
+        ],
+        statuses: ["hadir", "hadir", "hadir", "tugas", "hadir", "hadir"],
+      };
+
+      const statusConfig = {
+        hadir: { label: "Hadir", cls: "badge-green", icon: "check" },
+        izin: { label: "Izin", cls: "badge-yellow", icon: "file-alt" },
+        sakit: { label: "Sakit", cls: "badge-blue", icon: "heartbeat" },
+        alpa: { label: "Alpa", cls: "badge-red", icon: "times" },
+        tugas: { label: "Tugas", cls: "badge-cyan", icon: "briefcase" },
+      };
+
+      function addPresensi() {
+        const container = document.getElementById("presensi-container");
+        const data = currentTab === "siswa" ? dataSiswa : dataGuru;
+        const idx = Math.floor(Math.random() * data.names.length);
+        const name = data.names[idx];
+        const sub = data.subs[idx];
+        const status = data.statuses[idx];
+        const time = new Date().toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+        const sc = statusConfig[status];
+
+        if (status === "hadir") hadirCount++;
+        else if (status === "izin" || status === "sakit") izinCount++;
+        else if (status === "alpa") alpaCount++;
+        document.getElementById("count-hadir").textContent = hadirCount;
+        document.getElementById("count-izin").textContent = izinCount;
+        document.getElementById("count-alpa").textContent = alpaCount;
+
+        const card = `
+    <div class="flex items-center gap-3 p-3 entry-anim" style="background:rgba(255,255,255,0.03);border:1px solid rgba(6,182,212,0.1);border-radius:14px;">
+      <div class="relative flex-shrink-0">
+        <img src="https://i.pravatar.cc/80?u=${encodeURIComponent(name)}" class="avatar" style="width:36px;height:36px" alt="${name}">
+        <div style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:${status === "hadir" ? "#10b981" : status === "alpa" ? "#ef4444" : "#f59e0b"};border:2px solid #080f1a"></div>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h4 class="font-bold text-xs text-slate-200 truncate">${name}</h4>
+        <p class="text-[9px] text-cyan-500 font-bold uppercase tracking-tighter">${sub}</p>
+      </div>
+      <div class="text-right flex-shrink-0">
+        <span class="badge ${sc.cls}" style="font-size:8px">${sc.label}</span>
+        <p class="text-[8px] text-slate-600 mt-1 font-mono">${time}</p>
+      </div>
+    </div>
+  `;
+
+        container.insertAdjacentHTML("afterbegin", card);
+        if (container.children.length > 20) container.lastElementChild.remove();
+      }
+
+      function switchTab(tab) {
+        currentTab = tab;
+        hadirCount = 0;
+        izinCount = 0;
+        alpaCount = 0;
+        document.getElementById("count-hadir").textContent = 0;
+        document.getElementById("count-izin").textContent = 0;
+        document.getElementById("count-alpa").textContent = 0;
+        document.getElementById("tab-siswa").className =
+          `tab-btn ${tab === "siswa" ? "active" : ""}`;
+        document.getElementById("tab-guru").className =
+          `tab-btn ${tab === "guru" ? "active" : ""}`;
+        document.getElementById("presensi-container").innerHTML = "";
+        for (let i = 0; i < 6; i++) setTimeout(addPresensi, i * 250);
+      }
+
+      // Initial load
+      for (let i = 0; i < 8; i++) setTimeout(addPresensi, i * 200);
+      setInterval(addPresensi, 3500);
+    </script>
+  </body>
+</html>
